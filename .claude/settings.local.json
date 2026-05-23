@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(cp -r portfolio-temp/* portfolio-temp/.* .)",
+      "Bash(rm -rf portfolio-temp)",
+      "Bash(cp -r /c/Users/Ahmed/portfolio/portfolio-temp/* /c/Users/Ahmed/portfolio/)",
+      "Bash(cp /c/Users/Ahmed/portfolio/portfolio-temp/.gitignore /c/Users/Ahmed/portfolio/)",
+      "Bash(rm -rf /c/Users/Ahmed/portfolio/portfolio-temp)",
+      "Bash(npm install:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx vite:*)",
+      "Bash(node:*)"
+    ]
+  }
+}
