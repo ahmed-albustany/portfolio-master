@@ -1,632 +1,514 @@
-import { useState, useEffect, useContext, useCallback, useRef } from 'react';
+import { useState, useContext, useCallback, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence, useMotionValueEvent, useScroll } from 'framer-motion';
-import { ThemeContext } from '@/context/ThemeContext';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { ModeContext } from '@/context/ModeContext';
-import { navLinks } from '@/data/portfolioData';
+import { navLinks, fallbackPersonalInfo } from '@/data/fallbackData';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
+import { useFirestore } from '@/hooks/useFirestore';
+import { getPersonalInfo } from '@/firebase/firestore';
+import { HiMenu, HiX } from 'react-icons/hi';
+import { FaGithub } from 'react-icons/fa';
 
-/* ================================================================
-   ANIMATED ICON COMPONENTS
-   ================================================================ */
+/* ------------------------------------------------------------------ */
+/*  Systems dropdown items                                             */
+/* ------------------------------------------------------------------ */
+const systemsSubItems = [
+  { id: 'sysadmin', label: 'Systems Administration', icon: '\u2B21' },
+  { id: 'network', label: 'Network Administration', icon: '\u25C8' },
+  { id: 'database', label: 'Database Administration', icon: '\u25C9' },
+  { id: 'security', label: 'Security & Surveillance', icon: '\u25CE' },
+  { id: 'helpdesk', label: 'IT Helpdesk & Support', icon: '\u25F7' },
+];
 
-function SunMoonToggle({ isDark, onClick }) {
+/* ------------------------------------------------------------------ */
+/*  Desktop nav structure                                              */
+/* ------------------------------------------------------------------ */
+const desktopNav = [
+  { label: 'PROFILE', scrollTo: 'hero', activeIds: ['hero', 'skills'] },
+  { label: 'OPERATOR', scrollTo: 'about', activeIds: ['about'] },
+  { label: 'OPERATIONS', scrollTo: 'projects', activeIds: ['projects', 'experience', 'certifications'] },
+  { label: 'SYSTEMS', scrollTo: 'sysadmin', activeIds: ['sysadmin', 'network', 'database', 'security', 'helpdesk'], hasDropdown: true },
+  { label: 'CONTACT', scrollTo: 'contact', activeIds: ['contact'] },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Mobile nav links (flat, with systems sub-items indented)           */
+/* ------------------------------------------------------------------ */
+const mobileNavLinks = [
+  { id: 'hero', label: 'Profile', indent: false },
+  { id: 'about', label: 'Operator', indent: false },
+  { id: 'projects', label: 'Operations', indent: false },
+  { id: 'experience', label: 'Experience', indent: true },
+  { id: 'certifications', label: 'Certifications', indent: true },
+  { id: 'sysadmin', label: '\u2B21 Systems Administration', indent: false, isSystem: true },
+  { id: 'network', label: '\u25C8 Network Administration', indent: true, isSystem: true },
+  { id: 'database', label: '\u25C9 Database Administration', indent: true, isSystem: true },
+  { id: 'security', label: '\u25CE Security & Surveillance', indent: true, isSystem: true },
+  { id: 'helpdesk', label: '\u25F7 IT Helpdesk & Support', indent: true, isSystem: true },
+  { id: 'contact', label: 'Contact', indent: false },
+];
+
+const sectionIds = navLinks.map((l) => l.id);
+
+/* ------------------------------------------------------------------ */
+/*  Systems Dropdown                                                   */
+/* ------------------------------------------------------------------ */
+function SystemsDropdown({ onSelect }) {
   return (
-    <motion.button
-      onClick={onClick}
-      className="relative flex items-center justify-center w-10 h-10 rounded-xl
-                 hover:bg-primary/10 transition-colors duration-200"
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      whileTap={{ scale: 0.85 }}
+    <motion.div
+      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+      transition={{ duration: 0.18 }}
+      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-lg overflow-hidden z-50
+                 border font-mono"
+      style={{
+        backgroundColor: '#0D1520',
+        borderColor: 'rgba(0,212,255,0.2)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 16px rgba(0,212,255,0.08)',
+      }}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        {isDark ? (
-          <motion.svg
-            key="sun"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-5 h-5 text-amber-400"
-            initial={{ rotate: -90, scale: 0, opacity: 0 }}
-            animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            exit={{ rotate: 90, scale: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+      <div className="py-1.5">
+        {systemsSubItems.map((item, i) => (
+          <motion.button
+            key={item.id}
+            onClick={() => onSelect(item.id)}
+            className="w-full text-left px-4 py-2.5 text-[11px] font-mono tracking-wide
+                       transition-colors duration-150 flex items-center gap-2.5"
+            style={{ color: 'var(--color-text-secondary)' }}
+            whileHover={{ color: '#00D4FF', backgroundColor: 'rgba(0,212,255,0.06)', x: 4 }}
+            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0 }}
           >
-            <circle cx="12" cy="12" r="5" />
-            <motion.g
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15, duration: 0.2 }}
-            >
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </motion.g>
-          </motion.svg>
-        ) : (
-          <motion.svg
-            key="moon"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-5 h-5 text-indigo-500"
-            initial={{ rotate: 90, scale: 0, opacity: 0 }}
-            animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            exit={{ rotate: -90, scale: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-          </motion.svg>
-        )}
-      </AnimatePresence>
-    </motion.button>
-  );
-}
-
-function HamburgerToggle({ isOpen, onClick }) {
-  const barBase = 'absolute left-[3px] h-[2.5px] rounded-full';
-
-  return (
-    <motion.button
-      onClick={onClick}
-      className="relative flex items-center justify-center w-10 h-10 rounded-xl
-                 lg:hidden hover:bg-primary/10 transition-colors duration-200"
-      style={{ color: 'var(--color-text-muted)' }}
-      aria-label={isOpen ? 'Close menu' : 'Open menu'}
-      whileTap={{ scale: 0.85 }}
-    >
-      <div className="relative w-[22px] h-[22px]">
-        {/* Top bar */}
-        <motion.div
-          className={barBase}
-          style={{ width: 16, backgroundColor: 'currentColor' }}
-          animate={isOpen
-            ? { top: 10, left: 3, rotate: 45, width: 16 }
-            : { top: 5, left: 2, rotate: 0, width: 16 }
-          }
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        />
-        {/* Middle bar */}
-        <motion.div
-          className={barBase}
-          style={{ top: 10, width: 16, backgroundColor: 'currentColor' }}
-          animate={isOpen
-            ? { opacity: 0, width: 0 }
-            : { opacity: 1, width: 16 }
-          }
-          transition={{ duration: 0.2, ease: 'easeInOut' }}
-        />
-        {/* Bottom bar */}
-        <motion.div
-          className={barBase}
-          style={{ width: 16, backgroundColor: 'currentColor' }}
-          animate={isOpen
-            ? { top: 10, left: 3, rotate: -45, width: 16 }
-            : { top: 15, left: 2, rotate: 0, width: 16 }
-          }
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        />
+            <span className="text-sm opacity-60">{item.icon}</span>
+            {item.label}
+          </motion.button>
+        ))}
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
 
-/* ================================================================
-   HOOK: useScrollDirection — hide on down, show on up
-   ================================================================ */
+/* ------------------------------------------------------------------ */
+/*  Navbar                                                             */
+/* ------------------------------------------------------------------ */
+export default function Navbar() {
+  const { isDeepSystem, enterDeepSystem } = useContext(ModeContext);
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+  const activeId = useScrollSpy(isHome ? sectionIds : []);
+  const { data: personalInfo } = useFirestore(getPersonalInfo, fallbackPersonalInfo);
 
-function useScrollDirection(threshold = 10) {
-  const [visible, setVisible] = useState(true);
-  const [atTop, setAtTop] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const [systemsOpen, setSystemsOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const lastScrollY = useRef(0);
+  const systemsTimeoutRef = useRef(null);
   const { scrollY } = useScroll();
-  const lastY = useRef(0);
-  const ticking = useRef(false);
 
-  useMotionValueEvent(scrollY, 'change', (latest) => {
-    if (ticking.current) return;
-    ticking.current = true;
+  const isAvailable = personalInfo?.availability
+    ? /available/i.test(personalInfo.availability)
+    : true;
 
-    requestAnimationFrame(() => {
-      const diff = latest - lastY.current;
+  const githubUrl = personalInfo?.socialLinks?.github || 'https://github.com/ahmed-albustany';
 
-      setAtTop(latest < 20);
-
-      if (Math.abs(diff) > threshold) {
-        setVisible(diff < 0 || latest < 20);
-        lastY.current = latest;
-      }
-
-      ticking.current = false;
-    });
+  useMotionValueEvent(scrollY, 'change', (v) => {
+    setIsScrolled(v > 50);
+    if (v > lastScrollY.current && v > 100) {
+      setIsHidden(true);
+    } else {
+      setIsHidden(false);
+    }
+    lastScrollY.current = v;
   });
 
-  return { visible, atTop };
-}
-
-/* ================================================================
-   NAVBAR COMPONENT
-   ================================================================ */
-
-export default function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const { isDark, toggleTheme } = useContext(ThemeContext);
-  const { isProfessional, toggleMode, preloadImmersiveLibs } = useContext(ModeContext);
-  const location = useLocation();
-
-  const isHomePage = location.pathname === '/';
-
-  const sectionIds = navLinks.map((link) => link.id);
-  const activeSection = useScrollSpy(sectionIds, { offset: 120 });
-  const { visible, atTop } = useScrollDirection(8);
-
-  /* Lock body scroll when mobile menu is open */
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileOpen]);
-
-  /* Close mobile menu on route change */
-  useEffect(() => {
-    setMobileOpen(false);
+    setIsOpen(false);
   }, [location.pathname]);
 
-  /* Close mobile menu on resize past breakpoint */
-  useEffect(() => {
-    const mql = window.matchMedia('(min-width: 1024px)');
-    const handler = (e) => { if (e.matches) setMobileOpen(false); };
-    mql.addEventListener('change', handler);
-    return () => mql.removeEventListener('change', handler);
-  }, []);
-
-  const scrollTo = useCallback((id) => {
+  const scrollToSection = useCallback((id) => {
+    setIsOpen(false);
+    setSystemsOpen(false);
     const el = document.getElementById(id);
     if (el) {
-      const navHeight = 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
-      window.scrollTo({ top, behavior: 'smooth' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    setMobileOpen(false);
   }, []);
 
-  /* ---- Animation Variants ---- */
+  const isGroupActive = (ids) => ids.includes(activeId);
 
-  const navbarVariants = {
-    visible: {
-      y: 0,
-      transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
-    },
-    hidden: {
-      y: '-100%',
-      transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
-    },
+  const handleSystemsEnter = () => {
+    if (systemsTimeoutRef.current) clearTimeout(systemsTimeoutRef.current);
+    setSystemsOpen(true);
   };
 
-  const overlayVariants = {
-    closed: {
-      opacity: 0,
-      transition: { duration: 0.3, ease: 'easeInOut' },
-    },
-    open: {
-      opacity: 1,
-      transition: { duration: 0.3, ease: 'easeInOut' },
-    },
+  const handleSystemsLeave = () => {
+    systemsTimeoutRef.current = setTimeout(() => setSystemsOpen(false), 150);
   };
-
-  const menuVariants = {
-    closed: {
-      x: '100%',
-      transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-    },
-    open: {
-      x: 0,
-      transition: {
-        duration: 0.4,
-        ease: [0.4, 0, 0.2, 1],
-        staggerChildren: 0.06,
-        delayChildren: 0.1,
-      },
-    },
-  };
-
-  const menuItemVariants = {
-    closed: { opacity: 0, x: 40 },
-    open: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
-    },
-  };
-
-  const logoLetters = 'Portfolio'.split('');
 
   return (
-    <>
-      {/* ===== NAVBAR BAR ===== */}
-      <motion.nav
-        variants={navbarVariants}
-        animate={visible || mobileOpen ? 'visible' : 'hidden'}
-        initial="visible"
-        className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${
-          atTop && !mobileOpen
-            ? 'shadow-none'
-            : 'shadow-lg shadow-black/5 dark:shadow-black/20'
-        }`}
+    <motion.header
+      className="fixed top-0 left-0 right-0 z-50"
+      initial={{ y: -80 }}
+      animate={{ y: isHidden && !isOpen ? -80 : 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Glassmorphism bar */}
+      <div
+        className="transition-all duration-300"
         style={{
-          backgroundColor: atTop && !mobileOpen
-            ? 'transparent'
-            : 'var(--color-surface-glass)',
-          borderBottom: atTop && !mobileOpen
-            ? '1px solid transparent'
-            : '1px solid var(--color-border-subtle)',
-          backdropFilter: atTop && !mobileOpen ? 'none' : 'blur(20px) saturate(1.8)',
-          WebkitBackdropFilter: atTop && !mobileOpen ? 'none' : 'blur(20px) saturate(1.8)',
+          backgroundColor: isScrolled ? 'rgba(6,11,20,0.8)' : 'transparent',
+          backdropFilter: isScrolled ? 'blur(12px) saturate(1.2)' : 'none',
+          WebkitBackdropFilter: isScrolled ? 'blur(12px) saturate(1.2)' : 'none',
+          borderBottom: isScrolled
+            ? '1px solid var(--color-border-primary)'
+            : '1px solid transparent',
         }}
       >
-        <div className="section-container">
-          <div className="flex items-center justify-between h-16 sm:h-18 lg:h-20">
-
-            {/* ---- Logo ---- */}
-            <Link
-              to="/"
-              className="relative flex items-center gap-0.5 group"
-              aria-label="Home"
+        <nav className="section-container flex items-center justify-between h-16">
+          {/* ── Logo ── */}
+          <Link to="/" className="flex items-center gap-3 group">
+            <motion.div
+              className="w-9 h-9 rounded-lg flex items-center justify-center font-heading font-bold text-xs
+                         transition-all duration-300"
+              style={{
+                backgroundColor: 'rgba(0,212,255,0.12)',
+                color: '#00D4FF',
+                border: '1px solid rgba(0,212,255,0.3)',
+                boxShadow: '0 0 12px rgba(0,212,255,0.15)',
+              }}
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
             >
-              <motion.span
-                className="text-xl sm:text-2xl font-bold font-display tracking-tight flex"
+              AC
+            </motion.div>
+            <div className="hidden sm:flex flex-col leading-tight">
+              <span
+                className="text-[11px] font-heading font-bold tracking-wide"
                 style={{ color: 'var(--color-text-primary)' }}
-                initial="hidden"
-                animate="visible"
               >
-                {logoLetters.map((letter, i) => (
-                  <motion.span
-                    key={i}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: 0.1 + i * 0.04,
-                      ease: [0.4, 0, 0.2, 1],
+                AHMED ALBUSTANY
+              </span>
+              <span
+                className="text-[9px] font-mono tracking-wider uppercase"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                IT Officer &amp; Full-Stack Developer
+              </span>
+              {isAvailable && (
+                <span className="flex items-center gap-1 mt-0.5">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{
+                      backgroundColor: '#00FF88',
+                      boxShadow: '0 0 6px rgba(0,255,136,0.6)',
+                      animation: 'pulse-dot 2s ease-in-out infinite',
                     }}
-                    className="inline-block group-hover:text-primary transition-colors duration-200"
-                    style={{ transitionDelay: `${i * 20}ms` }}
+                  />
+                  <span
+                    className="text-[9px] font-mono font-semibold tracking-widest uppercase"
+                    style={{ color: '#00FF88' }}
                   >
-                    {letter}
-                  </motion.span>
-                ))}
-              </motion.span>
-              <motion.span
-                className="text-xl sm:text-2xl font-bold text-primary"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.5,
-                  type: 'spring',
-                  stiffness: 400,
-                  damping: 12,
+                    Available
+                  </span>
+                </span>
+              )}
+            </div>
+          </Link>
+
+          {/* ── Desktop nav ── */}
+          <div className="hidden lg:flex items-center gap-1">
+            {desktopNav.map((item) => {
+              const active = isGroupActive(item.activeIds);
+
+              if (item.hasDropdown) {
+                return (
+                  <div
+                    key={item.label}
+                    className="relative"
+                    onMouseEnter={handleSystemsEnter}
+                    onMouseLeave={handleSystemsLeave}
+                  >
+                    <button
+                      onClick={() => scrollToSection(item.scrollTo)}
+                      className="relative px-4 py-2 text-[11px] font-mono font-semibold tracking-wider
+                                 rounded-md transition-all duration-200"
+                      style={{
+                        color: active ? '#0066FF' : 'var(--color-text-muted)',
+                        backgroundColor: active ? 'rgba(0,102,255,0.08)' : 'transparent',
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        {active && (
+                          <motion.span
+                            layoutId="nav-indicator"
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{
+                              backgroundColor: '#00D4FF',
+                              boxShadow: '0 0 8px rgba(0,212,255,0.6)',
+                            }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                        {item.label}
+                        <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" className="opacity-50">
+                          <path d="M1 3L4 6L7 3" stroke="currentColor" strokeWidth="1.2" fill="none" />
+                        </svg>
+                      </span>
+                    </button>
+
+                    <AnimatePresence>
+                      {systemsOpen && (
+                        <SystemsDropdown onSelect={scrollToSection} />
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
+
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => scrollToSection(item.scrollTo)}
+                  className="relative px-4 py-2 text-[11px] font-mono font-semibold tracking-wider
+                             rounded-md transition-all duration-200"
+                  style={{
+                    color: active ? '#0066FF' : 'var(--color-text-muted)',
+                    backgroundColor: active ? 'rgba(0,102,255,0.08)' : 'transparent',
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    {active && (
+                      <motion.span
+                        layoutId="nav-indicator"
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{
+                          backgroundColor: '#00D4FF',
+                          boxShadow: '0 0 8px rgba(0,212,255,0.6)',
+                        }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── Right side controls ── */}
+          <div className="flex items-center gap-2">
+            {/* GitHub icon */}
+            <motion.a
+              href={githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-lg transition-colors duration-200"
+              style={{
+                color: 'var(--color-text-muted)',
+                backgroundColor: 'var(--color-bg-secondary)',
+                border: '1px solid var(--color-border-primary)',
+              }}
+              aria-label="GitHub profile"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <FaGithub className="w-4 h-4" />
+            </motion.a>
+
+            {/* Deep System button */}
+            <div
+              className="relative"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <button
+                onClick={enterDeepSystem}
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-[10px] font-mono font-semibold
+                           uppercase tracking-wider rounded-md border transition-all duration-300 hover:scale-105"
+                style={{
+                  color: isDeepSystem ? '#060B14' : '#00FF88',
+                  borderColor: 'rgba(0,255,136,0.3)',
+                  backgroundColor: isDeepSystem ? '#00FF88' : 'rgba(0,255,136,0.05)',
+                  boxShadow: isDeepSystem
+                    ? '0 0 20px rgba(0,255,136,0.4)'
+                    : '0 0 10px rgba(0,255,136,0.1)',
                 }}
               >
-                .
-              </motion.span>
-            </Link>
-
-            {/* ---- Desktop Nav Links ---- */}
-            {isHomePage && (
-              <div className="hidden lg:flex items-center gap-0.5">
-                {navLinks.map((link, i) => {
-                  const isActive = activeSection === link.id;
-                  return (
-                    <motion.button
-                      key={link.id}
-                      onClick={() => scrollTo(link.id)}
-                      className="relative px-3 xl:px-4 py-2 text-sm font-medium rounded-lg
-                                 transition-colors duration-200"
-                      style={{
-                        color: isActive
-                          ? 'var(--color-accent)'
-                          : 'var(--color-text-muted)',
-                      }}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.2 + i * 0.04 }}
-                      whileHover={{ y: -1 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <span className="relative z-10">{link.label}</span>
-
-                      {/* Active indicator pill */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="nav-active-pill"
-                          className="absolute inset-0 rounded-lg"
-                          style={{ backgroundColor: 'var(--color-accent-muted)' }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 380,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-
-                      {/* Active bottom dot */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="nav-active-dot"
-                          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
-                          transition={{
-                            type: 'spring',
-                            stiffness: 380,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* ---- Right Controls ---- */}
-            <div className="flex items-center gap-1 sm:gap-2">
-
-              {/* Theme Toggle */}
-              <SunMoonToggle isDark={isDark} onClick={toggleTheme} />
-
-              {/* Enter the Universe / Professional Mode — desktop */}
-              {isHomePage && (
-                <motion.button
-                  onClick={toggleMode}
-                  onMouseEnter={isProfessional ? preloadImmersiveLibs : undefined}
-                  className="hidden sm:inline-flex items-center gap-2 px-3 lg:px-4 py-2
-                             text-sm font-semibold rounded-xl border transition-all duration-300
-                             active:scale-95"
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
                   style={{
-                    color: isProfessional ? '#A855F7' : 'var(--color-accent)',
-                    borderColor: isProfessional
-                      ? 'rgba(168, 85, 247, 0.3)'
-                      : 'var(--color-accent-muted)',
-                    backgroundColor: isProfessional
-                      ? 'rgba(168, 85, 247, 0.08)'
-                      : 'var(--color-accent-muted)',
+                    backgroundColor: '#00FF88',
+                    boxShadow: '0 0 6px rgba(0,255,136,0.6)',
+                    animation: 'pulse-dot 2s ease-in-out infinite',
                   }}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: 0.6 }}
-                  whileHover={{
-                    scale: 1.04,
-                    boxShadow: isProfessional
-                      ? '0 0 20px rgba(168, 85, 247, 0.3)'
-                      : '0 0 20px rgba(0, 212, 255, 0.3)',
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {/* Rocket icon */}
-                  <motion.svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-4 h-4"
-                    animate={isProfessional
-                      ? { rotate: [0, -10, 10, 0] }
-                      : { rotate: 0 }
-                    }
-                    transition={{
-                      duration: 2,
-                      repeat: isProfessional ? Infinity : 0,
-                      repeatDelay: 3,
+                />
+                Deep System
+              </button>
+
+              {/* Tooltip */}
+              <AnimatePresence>
+                {showTooltip && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full right-0 mt-2 px-3 py-1.5 rounded-md text-[10px] font-mono
+                               whitespace-nowrap pointer-events-none hidden sm:block"
+                    style={{
+                      backgroundColor: '#0D1520',
+                      color: '#00FF88',
+                      border: '1px solid rgba(0,255,136,0.2)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                     }}
                   >
-                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-                  </motion.svg>
-
-                  <span className="hidden lg:inline">
-                    {isProfessional ? 'Enter the Universe' : 'Professional'}
-                  </span>
-                  <span className="lg:hidden">
-                    {isProfessional ? 'Universe' : 'Pro'}
-                  </span>
-                </motion.button>
-              )}
-
-              {/* Hamburger — mobile/tablet */}
-              <HamburgerToggle
-                isOpen={mobileOpen}
-                onClick={() => setMobileOpen((prev) => !prev)}
-              />
-            </div>
-          </div>
-        </div>
-      </motion.nav>
-
-      {/* ===== MOBILE FULL-SCREEN OVERLAY MENU ===== */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              variants={overlayVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              className="fixed inset-0 z-40 lg:hidden"
-              style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-              onClick={() => setMobileOpen(false)}
-            />
-
-            {/* Slide-in Panel */}
-            <motion.div
-              variants={menuVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              className="fixed top-0 right-0 bottom-0 z-40 w-full xs:w-80 sm:w-96 lg:hidden
-                         flex flex-col overflow-y-auto"
-              style={{
-                backgroundColor: 'var(--color-bg-primary)',
-                borderLeft: '1px solid var(--color-border-subtle)',
-              }}
-            >
-              {/* Menu Header */}
-              <div className="flex items-center justify-between h-16 sm:h-18 px-6 sm:px-8"
-                   style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                <motion.span
-                  className="text-lg font-bold font-display"
-                  style={{ color: 'var(--color-text-primary)' }}
-                  variants={menuItemVariants}
-                >
-                  Navigation
-                </motion.span>
-                <HamburgerToggle
-                  isOpen={mobileOpen}
-                  onClick={() => setMobileOpen(false)}
-                />
-              </div>
-
-              {/* Menu Links */}
-              <nav className="flex-1 flex flex-col justify-center px-6 sm:px-8 py-8 gap-1">
-                {isHomePage && navLinks.map((link, i) => {
-                  const isActive = activeSection === link.id;
-                  return (
-                    <motion.button
-                      key={link.id}
-                      variants={menuItemVariants}
-                      onClick={() => scrollTo(link.id)}
-                      className="group relative flex items-center gap-4 w-full text-left px-4 py-4
-                                 rounded-xl transition-colors duration-200"
-                      style={{
-                        color: isActive
-                          ? 'var(--color-accent)'
-                          : 'var(--color-text-secondary)',
-                        backgroundColor: isActive
-                          ? 'var(--color-accent-muted)'
-                          : 'transparent',
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {/* Number */}
-                      <span
-                        className="w-8 text-xs font-mono"
-                        style={{
-                          color: isActive
-                            ? 'var(--color-accent)'
-                            : 'var(--color-text-muted)',
-                        }}
-                      >
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-
-                      {/* Label */}
-                      <span className="text-lg font-display font-semibold">
-                        {link.label}
-                      </span>
-
-                      {/* Active bar */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="mobile-active-bar"
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-primary"
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        />
-                      )}
-                    </motion.button>
-                  );
-                })}
-
-                {!isHomePage && (
-                  <motion.div variants={menuItemVariants}>
-                    <Link
-                      to="/"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-4 w-full px-4 py-4 rounded-xl text-lg
-                                 font-display font-semibold"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      <span className="w-8 text-xs font-mono"
-                            style={{ color: 'var(--color-text-muted)' }}>01</span>
-                      Home
-                    </Link>
+                    Enter immersive experience
                   </motion.div>
                 )}
-              </nav>
+              </AnimatePresence>
+            </div>
 
-              {/* Menu Footer — Mode Switch */}
-              {isHomePage && (
-                <div className="px-6 sm:px-8 pb-8">
-                  <motion.button
-                    variants={menuItemVariants}
-                    onClick={() => { toggleMode(); setMobileOpen(false); }}
-                    onMouseEnter={isProfessional ? preloadImmersiveLibs : undefined}
-                    className="flex items-center justify-center gap-3 w-full py-4 rounded-xl
-                               text-base font-semibold border transition-all duration-300
-                               active:scale-95"
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 rounded-lg lg:hidden transition-colors duration-200"
+              style={{
+                color: 'var(--color-text-muted)',
+                backgroundColor: 'var(--color-bg-secondary)',
+                border: '1px solid var(--color-border-primary)',
+              }}
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <HiX className="w-4 h-4" /> : <HiMenu className="w-4 h-4" />}
+            </button>
+          </div>
+        </nav>
+      </div>
+
+      {/* ── Mobile full-screen overlay ── */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 top-16 lg:hidden z-40"
+            style={{
+              backgroundColor: 'rgba(6,11,20,0.95)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+            }}
+          >
+            <nav className="section-container py-8 space-y-1 overflow-y-auto max-h-[calc(100vh-4rem)]">
+              {/* Availability badge on mobile */}
+              {isAvailable && (
+                <div className="flex items-center gap-2 px-4 py-2 mb-4">
+                  <span
+                    className="w-2 h-2 rounded-full"
                     style={{
-                      color: isProfessional ? '#A855F7' : 'var(--color-accent)',
-                      borderColor: isProfessional
-                        ? 'rgba(168, 85, 247, 0.3)'
-                        : 'var(--color-accent-muted)',
-                      backgroundColor: isProfessional
-                        ? 'rgba(168, 85, 247, 0.08)'
-                        : 'var(--color-accent-muted)',
+                      backgroundColor: '#00FF88',
+                      boxShadow: '0 0 6px rgba(0,255,136,0.6)',
+                      animation: 'pulse-dot 2s ease-in-out infinite',
                     }}
-                    whileTap={{ scale: 0.95 }}
+                  />
+                  <span
+                    className="text-[10px] font-mono font-semibold tracking-widest uppercase"
+                    style={{ color: '#00FF88' }}
                   >
-                    {/* Rocket icon */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-5 h-5"
-                    >
-                      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-                      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-                    </svg>
-                    {isProfessional ? 'Enter the Universe' : 'Professional Mode'}
-                  </motion.button>
-
-                  {/* Subtle branding */}
-                  <motion.p
-                    variants={menuItemVariants}
-                    className="text-center text-xs mt-6 font-mono"
-                    style={{ color: 'var(--color-text-muted)', opacity: 0.5 }}
-                  >
-                    &copy; {new Date().getFullYear()} Portfolio
-                  </motion.p>
+                    Available for opportunities
+                  </span>
                 </div>
               )}
-            </motion.div>
-          </>
+
+              {mobileNavLinks.map((link, i) => (
+                <motion.button
+                  key={link.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ delay: i * 0.04, duration: 0.2 }}
+                  onClick={() => scrollToSection(link.id)}
+                  className="w-full text-left py-3 text-sm font-mono rounded-lg
+                             transition-colors duration-200 flex items-center gap-3"
+                  style={{
+                    paddingLeft: link.indent ? '2.5rem' : '1rem',
+                    paddingRight: '1rem',
+                    color: activeId === link.id
+                      ? (link.isSystem ? '#00D4FF' : '#0066FF')
+                      : 'var(--color-text-secondary)',
+                    backgroundColor: activeId === link.id ? 'rgba(0,102,255,0.08)' : 'transparent',
+                    fontSize: link.indent ? '13px' : '14px',
+                  }}
+                >
+                  {activeId === link.id && (
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{
+                        backgroundColor: '#00D4FF',
+                        boxShadow: '0 0 8px rgba(0,212,255,0.6)',
+                      }}
+                    />
+                  )}
+                  {link.label}
+                </motion.button>
+              ))}
+
+              {/* GitHub link in mobile */}
+              <motion.a
+                href={githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ delay: mobileNavLinks.length * 0.04, duration: 0.2 }}
+                className="w-full text-left px-4 py-3 text-sm font-mono rounded-lg flex items-center gap-3
+                           mt-2 border"
+                style={{
+                  color: 'var(--color-text-secondary)',
+                  borderColor: 'var(--color-border-primary)',
+                  backgroundColor: 'var(--color-bg-secondary)',
+                }}
+              >
+                <FaGithub className="w-4 h-4" />
+                GitHub Profile
+              </motion.a>
+
+              {/* Deep System entry in mobile menu */}
+              <motion.button
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ delay: (mobileNavLinks.length + 1) * 0.04, duration: 0.2 }}
+                onClick={() => { enterDeepSystem(); setIsOpen(false); }}
+                className="w-full text-left px-4 py-3 text-sm font-mono rounded-lg flex items-center gap-3
+                           mt-2 border"
+                style={{
+                  color: '#00FF88',
+                  borderColor: 'rgba(0,255,136,0.2)',
+                  backgroundColor: 'rgba(0,255,136,0.05)',
+                }}
+              >
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: '#00FF88',
+                    boxShadow: '0 0 6px rgba(0,255,136,0.6)',
+                    animation: 'pulse-dot 2s ease-in-out infinite',
+                  }}
+                />
+                Enter Deep System
+              </motion.button>
+            </nav>
+          </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </motion.header>
   );
 }

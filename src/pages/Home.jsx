@@ -1,40 +1,39 @@
 import { useContext, lazy, Suspense } from 'react';
 import { ModeContext } from '@/context/ModeContext';
-import TransitionOverlay from '@/components/immersive/TransitionOverlay';
+import SkeletonLoader from '@/components/ui/SkeletonLoader';
 
 /* ================================================================
-   PROFESSIONAL SECTIONS — each lazy-loaded for code splitting
+   LAZY LOAD — Professional sections
    ================================================================ */
 
-const ProfessionalHero = lazy(() => import('@/components/sections/professional/Hero'));
-const ProfessionalAbout = lazy(() => import('@/components/sections/professional/About'));
-const ProfessionalSkills = lazy(() => import('@/components/sections/professional/Skills'));
-const ProfessionalProjects = lazy(() => import('@/components/sections/professional/Projects'));
-const ProfessionalExperience = lazy(() => import('@/components/sections/professional/Experience'));
-const ProfessionalCertifications = lazy(() => import('@/components/sections/professional/Certifications'));
-const ProfessionalContact = lazy(() => import('@/components/sections/professional/Contact'));
+const Hero = lazy(() => import('@/components/sections/professional/Hero'));
+const About = lazy(() => import('@/components/sections/professional/About'));
+const Skills = lazy(() => import('@/components/sections/professional/Skills'));
+const Projects = lazy(() => import('@/components/sections/professional/Projects'));
+const Experience = lazy(() => import('@/components/sections/professional/Experience'));
+const SysAdmin = lazy(() => import('@/components/sections/professional/SysAdmin'));
+const Network = lazy(() => import('@/components/sections/professional/Network'));
+const Database = lazy(() => import('@/components/sections/professional/Database'));
+const Security = lazy(() => import('@/components/sections/professional/Security'));
+const Helpdesk = lazy(() => import('@/components/sections/professional/Helpdesk'));
+const Certifications = lazy(() => import('@/components/sections/professional/Certifications'));
+const Contact = lazy(() => import('@/components/sections/professional/Contact'));
 
 /* ================================================================
-   IMMERSIVE SHELL — lazy loaded, only fetched when mode activates
-   (ImmersiveShell internally lazy-loads all 7 immersive sections
-    + tsparticles, so nothing is loaded until the user clicks
-    "Enter Singularity")
+   LAZY LOAD — Deep System
    ================================================================ */
 
-const ImmersiveShell = lazy(() => import('@/components/immersive/ImmersiveShell'));
+const DeepSystemShell = lazy(() => import('@/components/sections/deepsystem/DeepSystemShell'));
 
 /* ================================================================
-   SECTION LOADER — lightweight skeleton while chunks stream in
+   SECTION FALLBACK
    ================================================================ */
 
-function SectionLoader() {
+function SectionFallback({ variant = 'card', count = 3 }) {
   return (
-    <div className="flex items-center justify-center py-20">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs font-mono" style={{ color: 'var(--color-text-muted)' }}>
-          Loading section...
-        </p>
+    <div className="section-padding">
+      <div className="section-container">
+        <SkeletonLoader variant={variant} count={count} />
       </div>
     </div>
   );
@@ -42,35 +41,87 @@ function SectionLoader() {
 
 /* ================================================================
    HOME PAGE
-   Renders either Professional or Immersive mode based on context.
-   TransitionOverlay sits on top for the mode-switch animation.
    ================================================================ */
 
 export default function Home() {
-  const { isProfessional } = useContext(ModeContext);
+  const { isDeepSystem } = useContext(ModeContext);
+
+  if (isDeepSystem) {
+    return (
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#000' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 border-2 border-[#00FF41] border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-mono" style={{ color: '#00FF4160' }}>Initializing deep system...</span>
+          </div>
+        </div>
+      }>
+        <DeepSystemShell />
+      </Suspense>
+    );
+  }
 
   return (
-    <>
-      {/* Transition overlay (renders during mode switch) */}
-      <TransitionOverlay />
+    <main>
+      {/* 1. Hero — full bleed, no skeleton needed (has own boot sequence) */}
+      <Suspense fallback={<SectionFallback variant="list" count={1} />}>
+        <Hero />
+      </Suspense>
 
-      <main>
-        <Suspense fallback={<SectionLoader />}>
-          {isProfessional ? (
-            <>
-              <ProfessionalHero />
-              <ProfessionalAbout />
-              <ProfessionalSkills />
-              <ProfessionalProjects />
-              <ProfessionalExperience />
-              <ProfessionalCertifications />
-              <ProfessionalContact />
-            </>
-          ) : (
-            <ImmersiveShell />
-          )}
-        </Suspense>
-      </main>
-    </>
+      {/* 2. About */}
+      <Suspense fallback={<SectionFallback variant="card" count={2} />}>
+        <About />
+      </Suspense>
+
+      {/* 3. Skills */}
+      <Suspense fallback={<SectionFallback variant="card" count={6} />}>
+        <Skills />
+      </Suspense>
+
+      {/* 4. Projects (Mission Log) */}
+      <Suspense fallback={<SectionFallback variant="card" count={4} />}>
+        <Projects />
+      </Suspense>
+
+      {/* 5. Experience */}
+      <Suspense fallback={<SectionFallback variant="list" count={3} />}>
+        <Experience />
+      </Suspense>
+
+      {/* 6. SysAdmin */}
+      <Suspense fallback={<SectionFallback variant="department" count={2} />}>
+        <SysAdmin />
+      </Suspense>
+
+      {/* 7. Network */}
+      <Suspense fallback={<SectionFallback variant="department" count={2} />}>
+        <Network />
+      </Suspense>
+
+      {/* 8. Database */}
+      <Suspense fallback={<SectionFallback variant="department" count={2} />}>
+        <Database />
+      </Suspense>
+
+      {/* 9. Security */}
+      <Suspense fallback={<SectionFallback variant="department" count={2} />}>
+        <Security />
+      </Suspense>
+
+      {/* 10. Helpdesk */}
+      <Suspense fallback={<SectionFallback variant="department" count={2} />}>
+        <Helpdesk />
+      </Suspense>
+
+      {/* 11. Certifications */}
+      <Suspense fallback={<SectionFallback variant="card" count={6} />}>
+        <Certifications />
+      </Suspense>
+
+      {/* 12. Contact */}
+      <Suspense fallback={<SectionFallback variant="card" count={2} />}>
+        <Contact />
+      </Suspense>
+    </main>
   );
 }

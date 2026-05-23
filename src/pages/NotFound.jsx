@@ -1,169 +1,148 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import CircuitBackground from '@/components/ui/CircuitBackground';
 
 /* ================================================================
-   FLOATING DEBRIS — small animated shapes in the background
+   GLITCH TEXT
    ================================================================ */
 
-const DEBRIS = Array.from({ length: 12 }, (_, i) => ({
-  id: i,
-  size: 2 + (i % 4),
-  x: (i * 19 + 5) % 100,
-  y: (i * 23 + 11) % 100,
-  duration: 4 + (i % 5) * 1.5,
-  delay: i * 0.3,
-}));
+function GlitchText({ text, className = '' }) {
+  return (
+    <span className={`relative inline-block ${className}`}>
+      <span className="relative z-10">{text}</span>
+      <motion.span
+        className="absolute top-0 left-0 z-20"
+        style={{ color: '#FF3B3B', clipPath: 'inset(0 0 60% 0)' }}
+        animate={{ x: [0, -3, 4, -2, 0], opacity: [1, 0.7, 1, 0.8, 1] }}
+        transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+        aria-hidden
+      >
+        {text}
+      </motion.span>
+      <motion.span
+        className="absolute top-0 left-0 z-20"
+        style={{ color: '#00D4FF', clipPath: 'inset(55% 0 0 0)' }}
+        animate={{ x: [0, 3, -4, 2, 0], opacity: [1, 0.6, 1, 0.75, 1] }}
+        transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+        aria-hidden
+      >
+        {text}
+      </motion.span>
+    </span>
+  );
+}
+
+/* ================================================================
+   404 PAGE
+   ================================================================ */
 
 export default function NotFound() {
   return (
     <div
-      className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden"
-      style={{ backgroundColor: '#0a0a0f' }}
+      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{ backgroundColor: 'var(--color-bg-primary)' }}
     >
-      {/* Star field */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.35), transparent),
-              radial-gradient(1px 1px at 35% 65%, rgba(255,255,255,0.25), transparent),
-              radial-gradient(1.5px 1.5px at 55% 15%, rgba(0,212,255,0.4), transparent),
-              radial-gradient(1px 1px at 75% 45%, rgba(255,255,255,0.3), transparent),
-              radial-gradient(1px 1px at 90% 80%, rgba(124,58,237,0.35), transparent),
-              radial-gradient(1px 1px at 10% 85%, rgba(255,255,255,0.2), transparent),
-              radial-gradient(1.5px 1.5px at 60% 90%, rgba(0,212,255,0.3), transparent),
-              radial-gradient(1px 1px at 45% 35%, rgba(255,255,255,0.15), transparent)
-            `,
-          }}
-        />
+      {/* Circuit background */}
+      <CircuitBackground />
 
-        {/* Nebula glow */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(ellipse 50% 40% at 30% 50%, rgba(0,212,255,0.05) 0%, transparent 70%),
-              radial-gradient(ellipse 50% 40% at 70% 50%, rgba(124,58,237,0.04) 0%, transparent 70%)
-            `,
-          }}
-        />
-      </div>
+      {/* Scanline overlay */}
+      <div className="scan-line-effect absolute inset-0 pointer-events-none" />
 
-      {/* Floating debris */}
-      {DEBRIS.map((d) => (
+      {/* Radial gradient vignette */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, transparent 30%, var(--color-bg-primary) 80%)' }}
+      />
+
+      <div className="relative z-10 text-center px-6 max-w-lg">
+        {/* 404 with glitch */}
         <motion.div
-          key={d.id}
-          className="absolute rounded-full"
-          style={{
-            width: d.size,
-            height: d.size,
-            left: `${d.x}%`,
-            top: `${d.y}%`,
-            backgroundColor: d.id % 3 === 0 ? '#00D4FF' : d.id % 3 === 1 ? '#A855F7' : '#ffffff',
-            opacity: 0.15,
-          }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0.1, 0.3, 0.1],
-          }}
-          transition={{
-            duration: d.duration,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: d.delay,
-          }}
-        />
-      ))}
-
-      {/* Content */}
-      <motion.div
-        className="relative z-10 text-center max-w-lg"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-      >
-        {/* Glitch 404 */}
-        <div className="relative mb-6">
-          <motion.h1
-            className="text-[120px] sm:text-[160px] font-bold font-display leading-none tracking-tighter"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <h1
+            className="text-[100px] sm:text-[140px] md:text-[180px] font-heading font-black leading-none mb-2"
             style={{
-              background: 'linear-gradient(135deg, #00D4FF, #A855F7, #EC4899)',
+              background: 'linear-gradient(135deg, #0066FF, #00D4FF)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
-            animate={{
-              textShadow: [
-                '0 0 20px rgba(0,212,255,0.3)',
-                '0 0 40px rgba(124,58,237,0.3)',
-                '0 0 20px rgba(0,212,255,0.3)',
-              ],
-            }}
-            transition={{ duration: 3, repeat: Infinity }}
           >
-            404
-          </motion.h1>
+            <GlitchText text="404" />
+          </h1>
+        </motion.div>
 
-          {/* Orbit ring around 404 */}
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 sm:w-56 sm:h-56
-                       rounded-full border border-[#00D4FF]/10"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-          >
-            <div
-              className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#00D4FF]"
-              style={{ boxShadow: '0 0 8px #00D4FF' }}
-            />
-          </motion.div>
-        </div>
-
-        {/* Message */}
-        <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 font-display">
-          Lost in Space
-        </h2>
-        <p className="text-[#94a3b8] mb-2 text-sm sm:text-base leading-relaxed">
-          The coordinates you entered don't match any known destination
-          in this universe.
-        </p>
-        <p className="text-[#475569] font-mono text-xs mb-8">
-          Error: ROUTE_NOT_FOUND — sector undefined
-        </p>
-
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl
-                       bg-[#00D4FF] text-[#0a0a0f] hover:brightness-110 transition-all duration-200
-                       hover:shadow-[0_0_20px_rgba(0,212,255,0.3)] active:scale-95"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z" />
-            </svg>
-            Return Home
-          </Link>
-          <button
-            onClick={() => window.history.back()}
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-xl
-                       border border-white/15 text-white/70 hover:text-white hover:border-white/30
-                       transition-all duration-200 active:scale-95"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Go Back
-          </button>
-        </div>
-
-        {/* Terminal-style coordinates */}
-        <div
-          className="mt-10 inline-block px-4 py-2 rounded-lg border border-white/5 text-[11px] font-mono text-[#475569]"
-          style={{ backgroundColor: '#0d0d14' }}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <span className="text-[#00D4FF]/50">$</span> location.resolve(<span className="text-[#EF4444]/60">"{typeof window !== 'undefined' ? 'unknown' : ''}"</span>) → <span className="text-[#EF4444]/60">null</span>
-        </div>
-      </motion.div>
+          {/* Error status */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3B3B] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#FF3B3B]" />
+            </span>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest" style={{ color: '#FF3B3B' }}>
+              System Error
+            </span>
+          </div>
+
+          <h2
+            className="text-lg sm:text-xl font-heading font-bold mb-2"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
+            PAGE NOT FOUND
+          </h2>
+
+          <p
+            className="text-xs sm:text-sm font-mono mb-8 max-w-sm mx-auto"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            System cannot locate the requested module. The resource may have been moved or does not exist.
+          </p>
+
+          {/* Terminal readout */}
+          <div
+            className="inline-block w-full max-w-xs px-5 py-4 rounded-lg text-left font-mono text-[11px] mb-8 space-y-1"
+            style={{
+              backgroundColor: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border-primary)',
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            <p>
+              <span style={{ color: '#FF3B3B' }}>ERR</span>{' '}
+              route.resolve() failed
+            </p>
+            <p>
+              <span style={{ color: '#FFB800' }}>REF</span>{' '}
+              path=&quot;{typeof window !== 'undefined' ? window.location.pathname : '/unknown'}&quot;
+            </p>
+            <p>
+              <span style={{ color: '#00FF88' }}>FIX</span>{' '}
+              redirect → /
+            </p>
+          </div>
+
+          <div>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-6 py-3 text-[11px] font-mono font-bold
+                         uppercase tracking-widest rounded-lg transition-all duration-300
+                         hover:scale-105 hover:brightness-110"
+              style={{
+                backgroundColor: '#0066FF',
+                color: '#FFFFFF',
+                boxShadow: '0 0 20px rgba(0,102,255,0.3)',
+              }}
+            >
+              Return to Home Base
+            </Link>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

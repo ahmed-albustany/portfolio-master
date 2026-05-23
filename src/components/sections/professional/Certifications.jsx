@@ -1,99 +1,59 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { HiExternalLink, HiShieldCheck, HiBadgeCheck } from 'react-icons/hi';
-import { certifications as staticCerts } from '@/data/portfolioData';
-import { getDocuments } from '@/firebase/firestore';
+import { useFirestore } from '@/hooks/useFirestore';
+import { getCertifications } from '@/firebase/firestore';
+import { fallbackCertifications } from '@/data/fallbackData';
+import SkeletonLoader from '@/components/ui/SkeletonLoader';
+import EmptyState from '@/components/ui/EmptyState';
 
 /* ================================================================
-   CONSTANTS
+   CATEGORY COLORS
    ================================================================ */
 
-const CATEGORY_ACCENT = {
+const CATEGORY_COLORS = {
   cloud:    '#00D4FF',
-  dev:      '#A855F7',
-  security: '#EF4444',
-  it:       '#10B981',
+  dev:      '#0066FF',
+  development: '#0066FF',
+  security: '#FF3B3B',
+  network:  '#00FF88',
+  it:       '#FFB800',
 };
 
-const DEFAULT_ACCENT = '#00D4FF';
+function getCatColor(category) {
+  return CATEGORY_COLORS[(category || '').toLowerCase()] || '#A855F7';
+}
 
 /* ================================================================
    ANIMATION VARIANTS
    ================================================================ */
 
-const sectionHeader = {
+const container = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 35 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, ease: [0.25, 0.1, 0.25, 1] },
-  },
-};
-
-const gridContainer = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
-  },
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.25, 0.1, 0.25, 1] } },
 };
 
 const cardReveal = {
-  hidden: { opacity: 0, y: 40, scale: 0.92 },
+  hidden: { opacity: 0, y: 35, scale: 0.94 },
   visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.55, ease: [0.25, 0.1, 0.25, 1] },
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] },
   },
 };
 
 /* ================================================================
-   HOOK: useFirestoreCerts
-   Loads from Firestore, falls back to static data.
-   ================================================================ */
-
-function useFirestoreCerts() {
-  const [certs, setCerts] = useState(staticCerts);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const docs = await getDocuments('certificates', 'date');
-        if (!cancelled && docs.length > 0) {
-          setCerts(docs);
-        }
-      } catch {
-        /* Firestore unavailable — keep static data */
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
-    return () => { cancelled = true; };
-  }, []);
-
-  return { certs, loading };
-}
-
-/* ================================================================
    FLIP CARD
-   Uses CSS perspective + Framer Motion rotateY for the flip.
-   Hover on desktop, tap toggles on mobile.
    ================================================================ */
 
 function FlipCard({ cert }) {
   const [isFlipped, setIsFlipped] = useState(false);
-  const accent = CATEGORY_ACCENT[cert.category] || DEFAULT_ACCENT;
+  const accent = getCatColor(cert.category);
 
   return (
     <motion.div
@@ -110,10 +70,10 @@ function FlipCard({ cert }) {
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        {/* ---- FRONT ---- */}
+        {/* ── FRONT ── */}
         <div
-          className="absolute inset-0 rounded-2xl overflow-hidden
-                     flex flex-col items-center justify-center p-6 sm:p-8 text-center"
+          className="absolute inset-0 rounded-xl overflow-hidden flex flex-col items-center justify-center
+                     p-6 sm:p-8 text-center"
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
@@ -121,70 +81,76 @@ function FlipCard({ cert }) {
             border: '1px solid var(--color-border-primary)',
           }}
         >
-          {/* Top accent line */}
-          <div
-            className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{
-              background: `linear-gradient(90deg, transparent, ${accent}, transparent)`,
-            }}
-          />
+          {/* Category color header bar */}
+          <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: accent }} />
 
-          {/* Badge image / Fallback icon */}
+          {/* Badge image or fallback */}
           <div
             className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28
-                       mb-5 rounded-2xl overflow-hidden transition-transform duration-300
+                       mb-5 rounded-xl overflow-hidden transition-transform duration-300
                        group-hover:scale-105"
             style={{ backgroundColor: `${accent}10` }}
           >
-            {cert.badgeImage ? (
+            {(cert.imageURL || cert.badgeImage) ? (
               <img
-                src={cert.badgeImage}
+                src={cert.imageURL || cert.badgeImage}
                 alt={cert.name}
                 className="w-full h-full object-contain p-3"
                 loading="lazy"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  if (e.currentTarget.nextElementSibling) {
+                    e.currentTarget.nextElementSibling.classList.remove('hidden');
+                  }
                 }}
               />
             ) : null}
-            {/* Fallback icon — shown if no image or image fails */}
             <HiShieldCheck
-              className={`w-12 h-12 sm:w-14 sm:h-14 absolute ${cert.badgeImage ? 'hidden' : ''}`}
+              className={`w-12 h-12 sm:w-14 sm:h-14 absolute ${(cert.imageURL || cert.badgeImage) ? 'hidden' : ''}`}
               style={{ color: accent }}
             />
           </div>
 
           {/* Issuer */}
-          <p
-            className="text-xs font-mono font-medium uppercase tracking-wider mb-1.5"
-            style={{ color: accent }}
-          >
+          <p className="text-[10px] font-mono font-semibold uppercase tracking-widest mb-1.5"
+             style={{ color: accent }}>
             {cert.issuer}
           </p>
 
-          {/* Cert name */}
-          <h3
-            className="text-sm sm:text-base font-display font-bold leading-snug"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
+          {/* Name */}
+          <h3 className="text-sm sm:text-base font-heading font-bold leading-snug"
+              style={{ color: 'var(--color-text-primary)' }}>
             {cert.name}
           </h3>
 
+          {/* Category badge */}
+          {cert.category && (
+            <span
+              className="mt-3 px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded"
+              style={{
+                color: accent,
+                backgroundColor: `${accent}10`,
+                border: `1px solid ${accent}20`,
+              }}
+            >
+              {cert.category}
+            </span>
+          )}
+
           {/* Flip hint */}
           <span
-            className="absolute bottom-4 text-[10px] font-mono uppercase tracking-widest
-                       transition-opacity duration-300 opacity-40 group-hover:opacity-70"
+            className="absolute bottom-3 text-[9px] font-mono uppercase tracking-widest
+                       opacity-30 group-hover:opacity-60 transition-opacity duration-300"
             style={{ color: 'var(--color-text-muted)' }}
           >
             Hover to flip
           </span>
         </div>
 
-        {/* ---- BACK ---- */}
+        {/* ── BACK ── */}
         <div
-          className="absolute inset-0 rounded-2xl overflow-hidden
-                     flex flex-col items-center justify-center p-6 sm:p-8 text-center"
+          className="absolute inset-0 rounded-xl overflow-hidden flex flex-col items-center
+                     justify-center p-6 sm:p-8 text-center"
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
@@ -193,63 +159,86 @@ function FlipCard({ cert }) {
             border: '1px solid var(--color-border-primary)',
           }}
         >
-          {/* Top accent line */}
-          <div
-            className="absolute top-0 left-0 right-0 h-[2px]"
-            style={{
-              background: `linear-gradient(90deg, transparent, ${accent}, transparent)`,
-            }}
-          />
+          <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: accent }} />
 
-          {/* Accent glow */}
+          {/* Glow */}
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse 70% 50% at 50% 0%, ${accent}08 0%, transparent 70%)`,
-            }}
+            style={{ background: `radial-gradient(ellipse 70% 50% at 50% 0%, ${accent}08, transparent 70%)` }}
           />
 
-          {/* Verified badge */}
-          <div
-            className="flex items-center justify-center w-14 h-14 mb-5 rounded-full"
-            style={{ backgroundColor: `${accent}15` }}
-          >
+          {/* Verified icon */}
+          <div className="flex items-center justify-center w-14 h-14 mb-5 rounded-full"
+               style={{ backgroundColor: `${accent}15` }}>
             <HiBadgeCheck className="w-8 h-8" style={{ color: accent }} />
           </div>
 
           {/* Details */}
-          <div className="space-y-3 mb-6 w-full">
-            <DetailRow label="Issued" value={cert.date} accent={accent} />
-            {cert.credentialId && (
-              <DetailRow label="Credential ID" value={cert.credentialId} accent={accent} />
+          <div className="space-y-2.5 mb-5 w-full">
+            {cert.date && (
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg text-xs"
+                   style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                <span className="font-mono font-semibold uppercase tracking-wider"
+                      style={{ color: 'var(--color-text-muted)' }}>Issued</span>
+                <span className="font-mono font-semibold" style={{ color: accent }}>{cert.date}</span>
+              </div>
+            )}
+            {cert.credentialID && (
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg text-xs"
+                   style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                <span className="font-mono font-semibold uppercase tracking-wider"
+                      style={{ color: 'var(--color-text-muted)' }}>ID</span>
+                <span className="font-mono font-semibold text-[10px]"
+                      style={{ color: 'var(--color-text-secondary)' }}>{cert.credentialID}</span>
+              </div>
+            )}
+            {cert.category && (
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg text-xs"
+                   style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                <span className="font-mono font-semibold uppercase tracking-wider"
+                      style={{ color: 'var(--color-text-muted)' }}>Category</span>
+                <span className="font-mono font-bold uppercase" style={{ color: accent }}>{cert.category}</span>
+              </div>
             )}
           </div>
 
-          {/* Verify link */}
-          {cert.credentialUrl && cert.credentialUrl !== '#' && (
+          {/* Verify / Classified */}
+          {cert.verifyURL || cert.credentialUrl ? (
             <a
-              href={cert.credentialUrl}
+              href={cert.verifyURL || cert.credentialUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold
-                         font-mono uppercase tracking-wider rounded-xl
-                         transition-all duration-200 hover:scale-105"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-[10px] font-mono
+                         font-bold uppercase tracking-widest rounded-lg transition-all
+                         duration-200 hover:scale-105"
               style={{
-                color: accent,
-                backgroundColor: `${accent}12`,
-                border: `1px solid ${accent}30`,
+                color: '#060B14',
+                backgroundColor: accent,
+                boxShadow: `0 0 15px ${accent}30`,
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <HiExternalLink className="w-4 h-4" />
-              Verify
+              <HiExternalLink className="w-3.5 h-3.5" />
+              Authenticate
             </a>
+          ) : (
+            <span
+              className="inline-flex items-center gap-2 px-4 py-2 text-[10px] font-mono
+                         font-bold uppercase tracking-widest rounded-lg border"
+              style={{
+                color: '#0066FF',
+                borderColor: 'rgba(0,102,255,0.3)',
+                backgroundColor: 'rgba(0,102,255,0.05)',
+              }}
+            >
+              <HiShieldCheck className="w-3.5 h-3.5" />
+              Classified
+            </span>
           )}
 
-          {/* Tap hint (mobile) */}
+          {/* Tap hint mobile */}
           <span
-            className="absolute bottom-4 text-[10px] font-mono uppercase tracking-widest
-                       opacity-40 sm:hidden"
+            className="absolute bottom-3 text-[9px] font-mono uppercase tracking-widest opacity-30 sm:hidden"
             style={{ color: 'var(--color-text-muted)' }}
           >
             Tap to flip back
@@ -261,47 +250,21 @@ function FlipCard({ cert }) {
 }
 
 /* ================================================================
-   DETAIL ROW (back of card)
-   ================================================================ */
-
-function DetailRow({ label, value, accent }) {
-  return (
-    <div
-      className="flex items-center justify-between px-4 py-2.5 rounded-xl text-sm"
-      style={{ backgroundColor: 'var(--color-bg-secondary)' }}
-    >
-      <span
-        className="text-xs font-mono font-medium uppercase tracking-wider"
-        style={{ color: 'var(--color-text-muted)' }}
-      >
-        {label}
-      </span>
-      <span
-        className="font-semibold text-xs sm:text-sm font-mono"
-        style={{ color: accent }}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
-/* ================================================================
    CERTIFICATIONS SECTION
    ================================================================ */
 
 export default function Certifications() {
-  const { certs, loading } = useFirestoreCerts();
+  const { data: certs, loading } = useFirestore(getCertifications, fallbackCertifications);
+  const [headerRef, headerInView] = useInView({ threshold: 0.2, triggerOnce: true });
+  const [gridRef, gridInView] = useInView({ threshold: 0.05, triggerOnce: true });
 
-  const [headerRef, headerInView] = useInView({
-    threshold: 0.2,
-    triggerOnce: true,
-  });
-
-  const [gridRef, gridInView] = useInView({
-    threshold: 0.05,
-    triggerOnce: true,
-  });
+  if (loading) {
+    return (
+      <section id="certifications" className="section-padding" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+        <div className="section-container"><SkeletonLoader variant="card" count={6} /></div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -309,118 +272,90 @@ export default function Certifications() {
       className="section-padding relative overflow-hidden"
       style={{ backgroundColor: 'var(--color-bg-secondary)' }}
     >
-      {/* Background */}
       <div
         className="absolute inset-0 pointer-events-none"
-        aria-hidden="true"
         style={{
           background: `
             radial-gradient(ellipse 50% 35% at 80% 0%, rgba(0,212,255,0.04) 0%, transparent 60%),
             radial-gradient(ellipse 50% 35% at 20% 100%, rgba(168,85,247,0.03) 0%, transparent 60%)
           `,
         }}
+        aria-hidden="true"
       />
 
       <div className="section-container relative z-10">
-        {/* ===== Header ===== */}
+        {/* Header */}
         <motion.div
           ref={headerRef}
-          variants={sectionHeader}
+          variants={container}
           initial="hidden"
           animate={headerInView ? 'visible' : 'hidden'}
-          className="text-center mb-12 sm:mb-16 lg:mb-20"
+          className="text-center mb-10 sm:mb-14"
         >
           <motion.span
             variants={fadeUp}
-            className="inline-block px-3 py-1.5 mb-4 text-xs font-mono font-medium
-                       rounded-full border"
+            className="inline-flex items-center gap-2 px-3 py-1.5 mb-4 text-[10px] font-mono
+                       font-semibold uppercase tracking-widest rounded-md border"
             style={{
-              color: 'var(--color-accent)',
-              backgroundColor: 'var(--color-accent-muted)',
-              borderColor: 'rgba(0,212,255,0.15)',
+              color: 'var(--color-text-muted)',
+              borderColor: 'var(--color-border-primary)',
+              backgroundColor: 'var(--color-bg-card)',
             }}
           >
-            {certs.length} certifications earned
+            <HiShieldCheck className="w-3 h-3" style={{ color: '#A855F7' }} />
+            Verified Authorizations
           </motion.span>
 
-          <motion.h2
-            variants={fadeUp}
-            className="heading-secondary mb-3 sm:mb-4"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            My <span className="text-gradient">Credentials</span>
+          <motion.h2 variants={fadeUp} className="heading-secondary mb-3"
+                     style={{ color: 'var(--color-text-primary)' }}>
+            Clearances & <span style={{ color: '#A855F7' }}>Credentials</span>
           </motion.h2>
 
-          <motion.p
-            variants={fadeUp}
-            className="text-sm sm:text-base max-w-xl mx-auto"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            Industry-recognised certifications that validate my skills
-            across development, cloud, and IT systems.
+          <motion.p variants={fadeUp} className="text-sm sm:text-base max-w-md mx-auto"
+                    style={{ color: 'var(--color-text-muted)' }}>
+            Industry-recognized certifications across development, cloud, and IT systems.
           </motion.p>
         </motion.div>
 
-        {/* ===== Loading state ===== */}
-        {loading && (
-          <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
-
-        {/* ===== Flip Cards Grid ===== */}
-        {!loading && (
+        {/* Grid */}
+        {(!certs || certs.length === 0) ? (
+          <EmptyState
+            icon={HiShieldCheck}
+            title="No Credentials on File"
+            description="No certifications yet — add from admin panel."
+            color="#A855F7"
+          />
+        ) : (
           <div ref={gridRef}>
             <motion.div
-              variants={gridContainer}
+              variants={container}
               initial="hidden"
               animate={gridInView ? 'visible' : 'hidden'}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6
-                         max-w-5xl mx-auto"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 max-w-5xl mx-auto"
             >
               {certs.map((cert) => (
                 <FlipCard key={cert.id} cert={cert} />
               ))}
             </motion.div>
-
-            {/* Empty state */}
-            {certs.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <p
-                  className="text-base"
-                  style={{ color: 'var(--color-text-muted)' }}
-                >
-                  No certifications to display yet.
-                </p>
-              </motion.div>
-            )}
           </div>
         )}
 
-        {/* ===== Bottom accent ===== */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={gridInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="flex items-center justify-center gap-2 mt-10 sm:mt-14"
-        >
-          <div
-            className="h-[1px] w-12 sm:w-16"
-            style={{ backgroundColor: 'var(--color-border-primary)' }}
-          />
-          <HiShieldCheck
-            className="w-5 h-5"
-            style={{ color: 'var(--color-text-muted)', opacity: 0.5 }}
-          />
-          <div
-            className="h-[1px] w-12 sm:w-16"
-            style={{ backgroundColor: 'var(--color-border-primary)' }}
-          />
-        </motion.div>
+        {/* Bottom accent */}
+        {certs && certs.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={gridInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="flex items-center justify-center gap-3 mt-10"
+          >
+            <div className="h-px w-12" style={{ backgroundColor: 'var(--color-border-primary)' }} />
+            <span className="text-[10px] font-mono uppercase tracking-widest"
+                  style={{ color: 'var(--color-text-muted)' }}>
+              {certs.length} Credentials Verified
+            </span>
+            <div className="h-px w-12" style={{ backgroundColor: 'var(--color-border-primary)' }} />
+          </motion.div>
+        )}
       </div>
     </section>
   );

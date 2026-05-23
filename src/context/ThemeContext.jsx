@@ -1,55 +1,25 @@
-import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useEffect, useMemo } from 'react';
 
-export const ThemeContext = createContext(null);
+export const ThemeContext = createContext({
+  theme: 'dark',
+  isDark: true,
+});
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    try {
-      const stored = localStorage.getItem('portfolio-theme');
-      if (stored === 'dark' || stored === 'light') return stored;
-    } catch {
-      /* localStorage unavailable */
-    }
-    return 'dark';
-  });
-
   useEffect(() => {
     const root = document.documentElement;
+    root.setAttribute('data-theme', 'dark');
+    root.classList.remove('light');
+    root.classList.add('dark');
+    localStorage.removeItem('portfolio-theme');
 
-    root.classList.remove('dark', 'light');
-    root.classList.add(theme);
-
-    root.setAttribute('data-theme', theme);
-
-    try {
-      localStorage.setItem('portfolio-theme', theme);
-    } catch {
-      /* localStorage unavailable */
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute('content', '#060B14');
     }
-
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute(
-        'content',
-        theme === 'dark' ? '#0a0a0f' : '#f8fafc'
-      );
-    }
-  }, [theme]);
-
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
-  const value = useMemo(
-    () => ({
-      theme,
-      setTheme,
-      toggleTheme,
-      isDark: theme === 'dark',
-      isLight: theme === 'light',
-    }),
-    [theme, setTheme, toggleTheme]
-  );
+  const value = useMemo(() => ({ theme: 'dark', isDark: true }), []);
 
   return (
     <ThemeContext.Provider value={value}>

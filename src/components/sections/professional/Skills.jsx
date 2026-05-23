@@ -1,175 +1,195 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { skills } from '@/data/portfolioData';
+import { useFirestore } from '@/hooks/useFirestore';
+import { getSkills } from '@/firebase/firestore';
+import { fallbackSkills } from '@/data/fallbackData';
+import SkeletonLoader from '@/components/ui/SkeletonLoader';
+import EmptyState from '@/components/ui/EmptyState';
+import { HiChip } from 'react-icons/hi';
 
 /* ================================================================
-   CONSTANTS & HELPERS
+   TABS
    ================================================================ */
 
-const LANES = Object.entries(skills); // [['development', {...}], ...]
-const LANE_KEYS = LANES.map(([key]) => key);
+const TABS = [
+  { key: 'all', label: 'ALL' },
+  { key: 'development', label: 'DEVELOPMENT' },
+  { key: 'infrastructure', label: 'INFRASTRUCTURE' },
+  { key: 'engineering', label: 'ENGINEERING' },
+];
+
+/* ================================================================
+   HELPERS
+   ================================================================ */
+
+function getBarColor(level) {
+  if (level >= 90) return '#00D4FF';   // cyan
+  if (level >= 70) return '#0066FF';   // blue
+  if (level >= 50) return '#FFB800';   // amber
+  return '#64748B';                     // gray
+}
 
 /* ================================================================
    ANIMATION VARIANTS
    ================================================================ */
 
-const sectionVariants = {
+const container = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+  visible: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 35 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, ease: [0.25, 0.1, 0.25, 1] },
-  },
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.25, 0.1, 0.25, 1] } },
 };
 
-/* Grid cards: pop-in with stagger */
-const gridContainerVariants = {
-  hidden: {},
+const cardVariant = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
   visible: {
-    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
   },
-  exit: {
-    transition: { staggerChildren: 0.03, staggerDirection: -1 },
-  },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
 };
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 24, scale: 0.92 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.92,
-    transition: { duration: 0.25, ease: 'easeIn' },
-  },
-};
-
-/* Progress bar fill */
-const barVariants = {
+const barVariant = {
   hidden: { scaleX: 0 },
   visible: (level) => ({
     scaleX: level / 100,
-    transition: { duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.8, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] },
   }),
 };
-
-/* ================================================================
-   TAB BUTTON
-   ================================================================ */
-
-function TabButton({ laneKey, lane, isActive, onClick }) {
-  const Icon = lane.icon;
-
-  return (
-    <button
-      onClick={onClick}
-      className="relative flex items-center gap-2 px-4 sm:px-5 py-2.5
-                 text-sm font-semibold rounded-xl transition-colors duration-200"
-      style={{
-        color: isActive ? 'var(--color-text-inverted)' : 'var(--color-text-muted)',
-        backgroundColor: isActive ? 'transparent' : 'transparent',
-      }}
-      aria-pressed={isActive}
-    >
-      {/* Active background pill (shared layout) */}
-      {isActive && (
-        <motion.div
-          layoutId="skills-tab-pill"
-          className="absolute inset-0 rounded-xl"
-          style={{ backgroundColor: lane.accent }}
-          transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-        />
-      )}
-
-      <span className="relative z-10 flex items-center gap-2">
-        <Icon className="w-4 h-4" />
-        <span className="hidden xs:inline">{lane.title}</span>
-        <span className="xs:hidden">{lane.shortTitle}</span>
-      </span>
-    </button>
-  );
-}
 
 /* ================================================================
    SKILL CARD
    ================================================================ */
 
-function SkillCard({ skill, index, barsTriggered, laneAccent }) {
-  const Icon = skill.icon;
+function SkillCard({ skill, barsTriggered }) {
+  const level = skill.level || skill.proficiency || 0;
+  const barColor = getBarColor(level);
 
   return (
     <motion.div
-      variants={cardVariants}
+      variants={cardVariant}
       layout
-      className="card-glow relative overflow-hidden p-4 sm:p-5 group"
+      className="group relative overflow-hidden rounded-xl p-4 sm:p-5 transition-all duration-200"
+      style={{
+        backgroundColor: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border-primary)',
+      }}
+      whileHover={{
+        borderColor: `${barColor}40`,
+        boxShadow: `0 0 15px ${barColor}10`,
+      }}
     >
-      {/* Hover glow overlay */}
+      {/* Top accent line */}
       <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100
-                   transition-opacity duration-500 pointer-events-none"
-        style={{
-          background: `radial-gradient(circle at 50% 0%, ${skill.color}12 0%, transparent 70%)`,
-        }}
+        className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100
+                   transition-opacity duration-300"
+        style={{ background: `linear-gradient(90deg, transparent, ${barColor}, transparent)` }}
       />
 
-      <div className="relative z-10">
-        {/* Icon + Name row */}
-        <div className="flex items-center gap-3 mb-3 sm:mb-4">
-          <div
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11
-                       rounded-xl transition-transform duration-300
-                       group-hover:scale-110"
-            style={{ backgroundColor: `${skill.color}15` }}
-          >
-            <Icon
-              className="w-5 h-5 sm:w-[22px] sm:h-[22px]"
-              style={{ color: skill.color }}
-            />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <span
-              className="block text-sm sm:text-base font-semibold truncate"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              {skill.name}
-            </span>
-            <span
-              className="block text-xs font-mono"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              {skill.level}%
-            </span>
-          </div>
+      {/* Icon + Name row */}
+      <div className="flex items-center gap-3 mb-3">
+        {/* Icon */}
+        <div
+          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0
+                     text-sm font-mono font-bold transition-transform duration-200
+                     group-hover:scale-110"
+          style={{
+            backgroundColor: `${barColor}12`,
+            border: `1px solid ${barColor}20`,
+            color: barColor,
+          }}
+        >
+          {skill.icon || skill.name?.charAt(0) || '?'}
         </div>
 
-        {/* Progress bar */}
+        <div className="flex-1 min-w-0">
+          <span
+            className="block text-sm font-heading font-semibold truncate"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
+            {skill.name}
+          </span>
+          {skill.category && (
+            <span
+              className="text-[10px] font-mono uppercase tracking-wider"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              {skill.category}
+            </span>
+          )}
+        </div>
+
+        {/* Status dot */}
+        <span className="flex items-center gap-1">
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{
+              backgroundColor: '#00FF88',
+              boxShadow: '0 0 4px rgba(0,255,136,0.4)',
+              animation: 'status-blink 2s ease-in-out infinite',
+            }}
+          />
+          <span
+            className="text-[9px] font-mono font-semibold uppercase hidden sm:inline"
+            style={{ color: '#00FF88' }}
+          >
+            Active
+          </span>
+        </span>
+      </div>
+
+      {/* Proficiency bar */}
+      <div className="mb-2">
+        <div className="flex items-center justify-between mb-1">
+          <span
+            className="text-[10px] font-mono"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Proficiency
+          </span>
+          <span
+            className="text-[10px] font-mono font-semibold"
+            style={{ color: barColor }}
+          >
+            {level}%
+          </span>
+        </div>
         <div
-          className="w-full h-1.5 sm:h-2 rounded-full overflow-hidden"
+          className="w-full h-1.5 rounded-full overflow-hidden"
           style={{ backgroundColor: 'var(--color-border-primary)' }}
         >
           <motion.div
             className="h-full rounded-full origin-left"
-            style={{
-              background: `linear-gradient(90deg, ${skill.color}, ${laneAccent})`,
-            }}
-            variants={barVariants}
+            style={{ backgroundColor: barColor }}
+            variants={barVariant}
             initial="hidden"
             animate={barsTriggered ? 'visible' : 'hidden'}
-            custom={skill.level}
+            custom={level}
           />
         </div>
       </div>
+
+      {/* Years used */}
+      {skill.yearsUsed != null && (
+        <div className="flex items-center justify-between">
+          <span
+            className="text-[10px] font-mono"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Experience
+          </span>
+          <span
+            className="text-[10px] font-mono font-semibold"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            {skill.yearsUsed} {skill.yearsUsed === 1 ? 'year' : 'years'}
+          </span>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -179,24 +199,38 @@ function SkillCard({ skill, index, barsTriggered, laneAccent }) {
    ================================================================ */
 
 export default function Skills() {
-  const [activeLane, setActiveLane] = useState(LANE_KEYS[0]);
+  const { data: skills, loading } = useFirestore(getSkills, fallbackSkills);
+  const [activeTab, setActiveTab] = useState('all');
 
-  const [headerRef, headerInView] = useInView({
-    threshold: 0.2,
-    triggerOnce: true,
-  });
+  const [headerRef, headerInView] = useInView({ threshold: 0.2, triggerOnce: true });
+  const [gridRef, gridInView] = useInView({ threshold: 0.05, triggerOnce: true });
 
-  const [gridRef, gridInView] = useInView({
-    threshold: 0.05,
-    triggerOnce: true,
-  });
+  // Filter skills by active tab
+  const filtered = useMemo(() => {
+    if (!skills || skills.length === 0) return [];
+    if (activeTab === 'all') return skills;
+    return skills.filter((s) => {
+      const cat = (s.category || '').toLowerCase();
+      return cat.includes(activeTab);
+    });
+  }, [skills, activeTab]);
 
-  const handleTabClick = useCallback((key) => {
-    setActiveLane(key);
-  }, []);
+  const handleTab = useCallback((key) => setActiveTab(key), []);
 
-  const activeLaneData = skills[activeLane];
-  const totalSkills = LANES.reduce((sum, [, lane]) => sum + lane.items.length, 0);
+  // Loading state
+  if (loading) {
+    return (
+      <section id="skills" className="section-padding" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+        <div className="section-container">
+          <div className="text-center mb-10">
+            <div className="skeleton h-8 w-48 rounded mx-auto mb-3" />
+            <div className="skeleton h-4 w-64 rounded mx-auto" />
+          </div>
+          <SkeletonLoader variant="card" count={8} />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -204,43 +238,44 @@ export default function Skills() {
       className="section-padding relative overflow-hidden"
       style={{ backgroundColor: 'var(--color-bg-primary)' }}
     >
-      {/* Background decoration */}
+      {/* Subtle background gradient */}
       <div
         className="absolute inset-0 pointer-events-none"
-        aria-hidden="true"
         style={{
           background: `
-            radial-gradient(ellipse 50% 40% at 0% 50%, ${activeLaneData.accent}08 0%, transparent 70%),
-            radial-gradient(ellipse 50% 40% at 100% 50%, ${activeLaneData.accent}05 0%, transparent 70%)
+            radial-gradient(ellipse 50% 30% at 0% 50%, rgba(0,102,255,0.04) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 30% at 100% 50%, rgba(0,212,255,0.03) 0%, transparent 70%)
           `,
         }}
+        aria-hidden="true"
       />
 
       <div className="section-container relative z-10">
-        {/* ===== Header ===== */}
+        {/* ── Header ── */}
         <motion.div
           ref={headerRef}
-          variants={sectionVariants}
+          variants={container}
           initial="hidden"
           animate={headerInView ? 'visible' : 'hidden'}
-          className="text-center mb-10 sm:mb-14"
+          className="text-center mb-10 sm:mb-12"
         >
           <motion.span
             variants={fadeUp}
-            className="inline-block px-3 py-1.5 mb-4 text-xs font-mono font-medium
-                       rounded-full border"
+            className="inline-flex items-center gap-2 px-3 py-1.5 mb-4 text-[10px] font-mono
+                       font-semibold uppercase tracking-widest rounded-md border"
             style={{
-              color: 'var(--color-accent)',
-              backgroundColor: 'var(--color-accent-muted)',
-              borderColor: 'rgba(0,212,255,0.15)',
+              color: 'var(--color-text-muted)',
+              borderColor: 'var(--color-border-primary)',
+              backgroundColor: 'var(--color-bg-card)',
             }}
           >
-            {totalSkills} technologies &amp; tools
+            <HiChip className="w-3 h-3" style={{ color: '#0066FF' }} />
+            Full Operational Capability
           </motion.span>
 
           <motion.h2
             variants={fadeUp}
-            className="heading-secondary mb-3 sm:mb-4"
+            className="heading-secondary mb-3"
             style={{ color: 'var(--color-text-primary)' }}
           >
             Tech <span className="text-gradient">Arsenal</span>
@@ -248,118 +283,111 @@ export default function Skills() {
 
           <motion.p
             variants={fadeUp}
-            className="text-sm sm:text-base max-w-xl mx-auto"
+            className="text-sm sm:text-base max-w-md mx-auto"
             style={{ color: 'var(--color-text-muted)' }}
           >
-            Three disciplines, one toolkit. Switch lanes to explore
-            the technologies I work with.
+            Technologies and tools across all operational departments.
           </motion.p>
         </motion.div>
 
-        {/* ===== Tab Switcher ===== */}
+        {/* ── Tab switcher ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={headerInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
           className="flex justify-center mb-8 sm:mb-10"
         >
           <div
-            className="inline-flex items-center gap-1 p-1.5 rounded-2xl"
+            className="inline-flex items-center gap-1 p-1 rounded-xl overflow-x-auto scrollbar-hide"
             style={{
               backgroundColor: 'var(--color-bg-secondary)',
               border: '1px solid var(--color-border-primary)',
             }}
           >
-            {LANES.map(([key, lane]) => (
-              <TabButton
-                key={key}
-                laneKey={key}
-                lane={lane}
-                isActive={activeLane === key}
-                onClick={() => handleTabClick(key)}
-              />
-            ))}
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => handleTab(tab.key)}
+                  className="relative px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-mono font-semibold
+                             tracking-wider rounded-lg transition-colors duration-200 whitespace-nowrap"
+                  style={{
+                    color: isActive ? '#FFFFFF' : 'var(--color-text-muted)',
+                  }}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="skills-tab-bg"
+                      className="absolute inset-0 rounded-lg"
+                      style={{ backgroundColor: '#0066FF' }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </motion.div>
 
-        {/* ===== Lane description ===== */}
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={activeLane + '-desc'}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25 }}
-            className="text-center text-sm mb-8 sm:mb-10 max-w-md mx-auto"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            {activeLaneData.description}
-          </motion.p>
-        </AnimatePresence>
-
-        {/* ===== Skill Cards Grid ===== */}
+        {/* ── Skills grid ── */}
         <div ref={gridRef}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeLane}
-              variants={gridContainerVariants}
-              initial="hidden"
-              animate={gridInView ? 'visible' : 'hidden'}
-              exit="exit"
-              className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
-            >
-              {activeLaneData.items.map((skill, index) => (
-                <SkillCard
-                  key={skill.name}
-                  skill={skill}
-                  index={index}
-                  barsTriggered={gridInView}
-                  laneAccent={activeLaneData.accent}
-                />
-              ))}
-            </motion.div>
-          </AnimatePresence>
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={HiChip}
+              title="No Skills Found"
+              description={
+                activeTab === 'all'
+                  ? 'No skills yet — add from admin panel.'
+                  : `No skills in "${activeTab}" category. Try a different filter.`
+              }
+            />
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                variants={container}
+                initial="hidden"
+                animate={gridInView ? 'visible' : 'hidden'}
+                exit="exit"
+                className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+              >
+                {filtered.map((skill) => (
+                  <SkillCard
+                    key={skill.id || skill.name}
+                    skill={skill}
+                    barsTriggered={gridInView}
+                  />
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
 
-        {/* ===== Bottom stat line ===== */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={gridInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.8 }}
-          className="flex items-center justify-center gap-6 sm:gap-8 mt-10 sm:mt-14
-                     flex-wrap"
-        >
-          {LANES.map(([key, lane]) => {
-            const Icon = lane.icon;
-            const isActive = activeLane === key;
-            return (
-              <button
-                key={key}
-                onClick={() => handleTabClick(key)}
-                className="flex items-center gap-2 text-sm font-medium
-                           transition-all duration-200 group"
-                style={{
-                  color: isActive ? lane.accent : 'var(--color-text-muted)',
-                  opacity: isActive ? 1 : 0.6,
-                }}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{lane.title}</span>
-                <span
-                  className="px-1.5 py-0.5 text-xs font-mono rounded-md"
-                  style={{
-                    backgroundColor: isActive
-                      ? `${lane.accent}20`
-                      : 'var(--color-bg-secondary)',
-                    color: isActive ? lane.accent : 'var(--color-text-muted)',
-                  }}
-                >
-                  {lane.items.length}
-                </span>
-              </button>
-            );
-          })}
-        </motion.div>
+        {/* ── Bottom count ── */}
+        {skills && skills.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={gridInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="flex items-center justify-center gap-2 mt-10"
+          >
+            <span
+              className="text-[10px] font-mono uppercase tracking-widest"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              Showing {filtered.length} of {skills.length} skills
+            </span>
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{
+                backgroundColor: '#00FF88',
+                boxShadow: '0 0 6px rgba(0,255,136,0.4)',
+              }}
+            />
+          </motion.div>
+        )}
       </div>
     </section>
   );

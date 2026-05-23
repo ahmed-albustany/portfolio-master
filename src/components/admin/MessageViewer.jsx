@@ -1,290 +1,207 @@
 import { useState, useEffect } from 'react';
 import {
-  HiMail,
-  HiMailOpen,
-  HiTrash,
-  HiRefresh,
-  HiChevronLeft,
-  HiExclamationCircle,
+  HiMail, HiMailOpen, HiTrash, HiRefresh, HiChevronLeft,
+  HiExclamationCircle, HiCheckCircle, HiReply,
 } from 'react-icons/hi';
-import { getDocuments, updateDocument, deleteDocument } from '@/firebase/firestore';
+import { getMessages, markAsRead, deleteMessage, updateDocument } from '@/firebase/firestore';
 
-/* ================================================================
-   MESSAGE VIEWER
-   Lists contact-form messages with read/unread + delete.
-   ================================================================ */
+function Toast({ toast }) {
+  if (!toast) return null;
+  return (
+    <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-mono font-semibold shadow-lg"
+      style={{
+        backgroundColor: toast.type === 'error' ? 'rgba(255,59,59,0.15)' : 'rgba(0,255,136,0.15)',
+        color: toast.type === 'error' ? '#FF3B3B' : '#00FF88',
+        border: `1px solid ${toast.type === 'error' ? 'rgba(255,59,59,0.3)' : 'rgba(0,255,136,0.3)'}`,
+      }}>
+      {toast.type === 'error' ? <HiExclamationCircle className="w-4 h-4" /> : <HiCheckCircle className="w-4 h-4" />}
+      {toast.message}
+    </div>
+  );
+}
 
 export default function MessageViewer() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
-  const [error, setError] = useState('');
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg, type = 'success') => { setToast({ message: msg, type }); setTimeout(() => setToast(null), 3000); };
 
   const fetchMessages = async () => {
     setLoading(true);
-    setError('');
-    try {
-      const docs = await getDocuments('messages');
-      setMessages(docs);
-    } catch {
-      setError('Failed to load messages.');
-    } finally {
-      setLoading(false);
-    }
+    try { setMessages(await getMessages()); }
+    catch { showToast('Failed to load messages', 'error'); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchMessages();
-  }, []);
+  useEffect(() => { fetchMessages(); }, []);
 
-  const markAsRead = async (msg) => {
+  const handleMarkRead = async (msg) => {
     try {
-      await updateDocument('messages', msg.id, { read: true });
-      setMessages((prev) =>
-        prev.map((m) => (m.id === msg.id ? { ...m, read: true } : m)),
-      );
-      if (selected?.id === msg.id) {
-        setSelected({ ...selected, read: true });
-      }
-    } catch {
-      setError('Failed to update message.');
-    }
+      await markAsRead(msg.id);
+      setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, read: true } : m));
+      if (selected?.id === msg.id) setSelected({ ...msg, read: true });
+    } catch { showToast('Failed to update', 'error'); }
   };
 
-  const markAsUnread = async (msg) => {
+  const handleMarkUnread = async (msg) => {
     try {
       await updateDocument('messages', msg.id, { read: false });
-      setMessages((prev) =>
-        prev.map((m) => (m.id === msg.id ? { ...m, read: false } : m)),
-      );
-      if (selected?.id === msg.id) {
-        setSelected({ ...selected, read: false });
-      }
-    } catch {
-      setError('Failed to update message.');
-    }
+      setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, read: false } : m));
+      if (selected?.id === msg.id) setSelected({ ...msg, read: false });
+    } catch { showToast('Failed to update', 'error'); }
   };
 
   const handleDelete = async (msg) => {
     if (!window.confirm(`Delete message from "${msg.name}"?`)) return;
     try {
-      await deleteDocument('messages', msg.id);
+      await deleteMessage(msg.id);
       setMessages((prev) => prev.filter((m) => m.id !== msg.id));
       if (selected?.id === msg.id) setSelected(null);
-    } catch {
-      setError('Failed to delete message.');
-    }
+      showToast('Message deleted');
+    } catch { showToast('Failed to delete', 'error'); }
   };
 
   const openMessage = async (msg) => {
     setSelected(msg);
-    if (!msg.read) {
-      await markAsRead(msg);
-    }
+    if (!msg.read) await handleMarkRead(msg);
   };
 
-  const formatDate = (timestamp) => {
-    if (!timestamp) return '—';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const formatDate = (ts) => {
+    if (!ts) return '\u2014';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
   const unreadCount = messages.filter((m) => !m.read).length;
 
   return (
     <div>
+      <Toast toast={toast} />
+
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-display font-bold text-white">Messages</h2>
-          <p className="text-sm text-[#666] font-mono">
+          <h2 className="text-lg font-heading font-bold text-white flex items-center gap-2">
+            Messages
+            {unreadCount > 0 && (
+              <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-[#FF3B3B]/15 text-[#FF3B3B]">
+                {unreadCount}
+              </span>
+            )}
+          </h2>
+          <p className="text-[11px] font-mono text-[#64748B] uppercase tracking-wider">
             {messages.length} total &middot; {unreadCount} unread
           </p>
         </div>
-        <button
-          onClick={fetchMessages}
-          className="flex items-center gap-2 px-3 py-2 text-xs font-mono font-medium
-                     rounded-lg transition-colors duration-200 hover:bg-[#1e1e2e]"
-          style={{ color: '#888', border: '1px solid #1e1e2e' }}
-        >
-          <HiRefresh className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
+        <button onClick={fetchMessages}
+          className="flex items-center gap-2 px-3 py-2 text-[10px] font-mono font-semibold uppercase tracking-wider rounded-lg hover:bg-[#1A2840]"
+          style={{ color: '#64748B', border: '1px solid #1A2840' }}>
+          <HiRefresh className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </button>
       </div>
 
-      {/* Error */}
-      {error && (
-        <div
-          className="flex items-center gap-2 px-4 py-3 mb-4 rounded-lg text-sm"
-          style={{
-            color: '#ef4444',
-            backgroundColor: 'rgba(239,68,68,0.08)',
-            border: '1px solid rgba(239,68,68,0.2)',
-          }}
-        >
-          <HiExclamationCircle className="w-4 h-4" />
-          {error}
-        </div>
-      )}
-
-      {/* Loading */}
       {loading && (
         <div className="flex justify-center py-16">
-          <div className="w-8 h-8 border-2 border-[#00D4FF] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#00FF88] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
-      {/* Empty */}
       {!loading && messages.length === 0 && (
         <div className="text-center py-16">
-          <HiMail className="w-12 h-12 mx-auto mb-3 text-[#333]" />
-          <p className="text-sm text-[#666] font-mono">No messages yet</p>
+          <HiMail className="w-12 h-12 mx-auto mb-3 text-[#1A2840]" />
+          <p className="text-xs font-mono text-[#334155]">No transmissions received</p>
         </div>
       )}
 
       {!loading && messages.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          {/* ---- Message list ---- */}
+          {/* Message list */}
           <div className={`lg:col-span-2 space-y-2 ${selected ? 'hidden lg:block' : ''}`}>
             {messages.map((msg) => (
               <button
                 key={msg.id}
                 onClick={() => openMessage(msg)}
                 className={`w-full text-left p-4 rounded-xl transition-all duration-200
-                  ${selected?.id === msg.id ? 'ring-1 ring-[#00D4FF]/50' : 'hover:bg-[#15151f]'}`}
+                  ${selected?.id === msg.id ? 'ring-1 ring-[#00D4FF]/40' : 'hover:border-[#1A2840]'}`}
                 style={{
-                  backgroundColor: selected?.id === msg.id ? '#111118' : '#0e0e16',
-                  border: '1px solid #1e1e2e',
-                }}
-              >
+                  backgroundColor: selected?.id === msg.id ? '#0D1520' : '#0A1628',
+                  border: `1px solid ${selected?.id === msg.id ? '#00D4FF30' : '#1A2840'}`,
+                }}>
                 <div className="flex items-center gap-2 mb-1">
-                  {!msg.read && (
-                    <span className="w-2 h-2 rounded-full bg-[#00D4FF] flex-shrink-0" />
-                  )}
-                  <span className="text-sm font-semibold text-white truncate">
+                  {!msg.read && <span className="w-2 h-2 rounded-full bg-[#00D4FF] flex-shrink-0" />}
+                  <span className={`text-sm font-semibold truncate ${!msg.read ? 'text-white' : 'text-[#94A3B8]'}`}>
                     {msg.name}
                   </span>
-                  <span className="ml-auto text-[10px] font-mono text-[#555] flex-shrink-0">
+                  <span className="ml-auto text-[10px] font-mono text-[#334155] flex-shrink-0">
                     {formatDate(msg.createdAt)}
                   </span>
                 </div>
-                <p className="text-xs font-medium text-[#888] truncate">{msg.subject}</p>
-                <p className="text-xs text-[#555] truncate mt-0.5">{msg.message}</p>
+                <p className="text-[11px] font-medium text-[#64748B] truncate">{msg.subject}</p>
+                <p className="text-[11px] text-[#334155] truncate mt-0.5">{msg.message}</p>
               </button>
             ))}
           </div>
 
-          {/* ---- Message detail ---- */}
+          {/* Message detail */}
           <div className={`lg:col-span-3 ${!selected ? 'hidden lg:block' : ''}`}>
             {selected ? (
-              <div
-                className="rounded-xl p-5 sm:p-6"
-                style={{
-                  backgroundColor: '#111118',
-                  border: '1px solid #1e1e2e',
-                }}
-              >
-                {/* Back button (mobile) */}
-                <button
-                  onClick={() => setSelected(null)}
-                  className="flex items-center gap-1 text-xs font-mono text-[#666]
-                             mb-4 lg:hidden hover:text-white transition-colors"
-                >
-                  <HiChevronLeft className="w-4 h-4" />
-                  Back to list
+              <div className="rounded-xl p-5 sm:p-6" style={{ backgroundColor: '#0D1520', border: '1px solid #1A2840' }}>
+                {/* Back (mobile) */}
+                <button onClick={() => setSelected(null)}
+                  className="flex items-center gap-1 text-[11px] font-mono text-[#64748B] mb-4 lg:hidden hover:text-white transition-colors">
+                  <HiChevronLeft className="w-4 h-4" /> Back
                 </button>
 
                 {/* Header */}
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <h3 className="text-base font-display font-bold text-white mb-1">
-                      {selected.subject}
-                    </h3>
-                    <p className="text-sm text-[#888]">
-                      From <span className="text-[#00D4FF] font-medium">{selected.name}</span>
-                      {' '}&lt;{selected.email}&gt;
-                    </p>
-                    <p className="text-xs font-mono text-[#555] mt-1">
-                      {formatDate(selected.createdAt)}
-                    </p>
-                  </div>
+                <div className="mb-6">
+                  <h3 className="text-base font-heading font-bold text-white mb-1">{selected.subject}</h3>
+                  <p className="text-sm text-[#94A3B8]">
+                    From <span className="text-[#00D4FF] font-semibold">{selected.name}</span>
+                    {' '}&lt;{selected.email}&gt;
+                  </p>
+                  <p className="text-[10px] font-mono text-[#334155] mt-1">{formatDate(selected.createdAt)}</p>
                 </div>
 
                 {/* Body */}
-                <div
-                  className="p-4 rounded-lg mb-6 text-sm leading-relaxed text-[#ccc] whitespace-pre-wrap"
-                  style={{ backgroundColor: '#0a0a0f', border: '1px solid #1a1a2e' }}
-                >
+                <div className="p-4 rounded-lg mb-6 text-sm leading-relaxed text-[#CBD5E1] whitespace-pre-wrap font-mono"
+                  style={{ backgroundColor: '#0A1628', border: '1px solid #1A2840' }}>
                   {selected.message}
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  <a
-                    href={`mailto:${selected.email}?subject=Re: ${encodeURIComponent(selected.subject)}`}
-                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold
-                               rounded-lg transition-all duration-200 hover:brightness-110"
-                    style={{ backgroundColor: '#00D4FF', color: '#0a0a0f' }}
-                  >
-                    <HiMail className="w-3.5 h-3.5" />
-                    Reply
+                  <a href={`mailto:${selected.email}?subject=Re: ${encodeURIComponent(selected.subject)}`}
+                    className="flex items-center gap-2 px-4 py-2 text-[11px] font-mono font-bold uppercase tracking-wider rounded-lg hover:brightness-110"
+                    style={{ backgroundColor: '#00D4FF', color: '#060B14' }}>
+                    <HiReply className="w-3.5 h-3.5" /> Reply
                   </a>
 
                   {selected.read ? (
-                    <button
-                      onClick={() => markAsUnread(selected)}
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-semibold
-                                 rounded-lg transition-colors duration-200"
-                      style={{
-                        color: '#888',
-                        backgroundColor: '#1e1e2e',
-                      }}
-                    >
-                      <HiMail className="w-3.5 h-3.5" />
-                      Mark Unread
+                    <button onClick={() => handleMarkUnread(selected)}
+                      className="flex items-center gap-2 px-4 py-2 text-[11px] font-mono font-semibold rounded-lg"
+                      style={{ color: '#64748B', backgroundColor: '#1A2840' }}>
+                      <HiMail className="w-3.5 h-3.5" /> Mark Unread
                     </button>
                   ) : (
-                    <button
-                      onClick={() => markAsRead(selected)}
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-semibold
-                                 rounded-lg transition-colors duration-200"
-                      style={{
-                        color: '#888',
-                        backgroundColor: '#1e1e2e',
-                      }}
-                    >
-                      <HiMailOpen className="w-3.5 h-3.5" />
-                      Mark Read
+                    <button onClick={() => handleMarkRead(selected)}
+                      className="flex items-center gap-2 px-4 py-2 text-[11px] font-mono font-semibold rounded-lg"
+                      style={{ color: '#64748B', backgroundColor: '#1A2840' }}>
+                      <HiMailOpen className="w-3.5 h-3.5" /> Mark Read
                     </button>
                   )}
 
-                  <button
-                    onClick={() => handleDelete(selected)}
-                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold
-                               rounded-lg transition-colors duration-200 ml-auto"
-                    style={{
-                      color: '#ef4444',
-                      backgroundColor: 'rgba(239,68,68,0.08)',
-                      border: '1px solid rgba(239,68,68,0.15)',
-                    }}
-                  >
-                    <HiTrash className="w-3.5 h-3.5" />
-                    Delete
+                  <button onClick={() => handleDelete(selected)}
+                    className="flex items-center gap-2 px-4 py-2 text-[11px] font-mono font-semibold rounded-lg ml-auto"
+                    style={{ color: '#FF3B3B', backgroundColor: 'rgba(255,59,59,0.08)', border: '1px solid rgba(255,59,59,0.15)' }}>
+                    <HiTrash className="w-3.5 h-3.5" /> Delete
                   </button>
                 </div>
               </div>
             ) : (
-              <div
-                className="rounded-xl p-12 text-center"
-                style={{ backgroundColor: '#111118', border: '1px solid #1e1e2e' }}
-              >
-                <HiMailOpen className="w-12 h-12 mx-auto mb-3 text-[#333]" />
-                <p className="text-sm text-[#555] font-mono">Select a message to read</p>
+              <div className="rounded-xl p-12 text-center" style={{ backgroundColor: '#0D1520', border: '1px solid #1A2840' }}>
+                <HiMailOpen className="w-12 h-12 mx-auto mb-3 text-[#1A2840]" />
+                <p className="text-xs font-mono text-[#334155] uppercase tracking-wider">Select a transmission to read</p>
               </div>
             )}
           </div>

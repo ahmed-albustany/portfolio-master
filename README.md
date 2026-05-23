@@ -1,250 +1,259 @@
-<p align="center">
-  <img src="public/favicon.svg" alt="Portfolio Logo" width="60" height="60" />
-</p>
+# :shield: Ahmed Albustany — Command Center Portfolio
 
-<h1 align="center">Ahmed's Portfolio</h1>
+> A military-grade IT command center portfolio built with React, Firebase, and Framer Motion. Dark mode only. No compromises.
 
-<p align="center">
-  <strong>Full-Stack Developer & IT Systems Engineer</strong>
-</p>
-
-<p align="center">
-  A dual-mode portfolio that transforms between a clean professional experience and an immersive science-themed universe — built to make an unforgettable impression.
-</p>
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-8.0-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-12.13-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.40-0055FF?style=flat-square&logo=framer&logoColor=white)](https://motion.dev)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://portfolio-master-kohl.vercel.app)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React" />
-  <img src="https://img.shields.io/badge/Firebase-12-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase" />
-  <img src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-  <a href="https://your-domain.com">
-    <img src="https://img.shields.io/badge/Live_Demo-00D4FF?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" />
-  </a>
+  <img src="docs/screenshots/hero-preview.png" alt="Command Center Preview" width="800" />
 </p>
-
-<br />
 
 ---
 
-<br />
+## About The Project
 
-## Screenshots
+This is not a typical developer portfolio. It's a fully operational **Command Center** — a dark, immersive interface inspired by military operations dashboards and sci-fi terminals.
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="docs/screenshots/professional-mode.png" alt="Professional Mode" />
-      <br />
-      <strong>Professional Mode</strong>
-      <br />
-      <sub>Clean, recruiter-ready design with dark/light theme</sub>
-    </td>
-    <td align="center" width="50%">
-      <img src="docs/screenshots/immersive-mode.png" alt="Immersive SINGULARITY Mode" />
-      <br />
-      <strong>Immersive SINGULARITY Mode</strong>
-      <br />
-      <sub>Science-themed universe with particles, DNA helix, orbital projects</sub>
-    </td>
-  </tr>
-</table>
+Every section is designed as a department within a command center: Systems Administration, Network Operations, Database Management, Security & Surveillance, and IT Helpdesk. Content is structured as mission logs, deployment histories, and clearance files — not generic cards and timelines.
 
-> **Note:** To add screenshots, create a `docs/screenshots/` folder and place `professional-mode.png` and `immersive-mode.png` images there. Recommended size: 1280x800.
+### What Makes It Unique
 
-<br />
+- **7 IT department sections** — each with its own data model and visual identity
+- **Dual mode experience** — Professional mode for recruiters, Deep System mode for the curious
+- **Full CMS admin panel** — manage all content from a protected dashboard, zero code changes needed
+- **100% dynamic content** — every piece of text, stat, and project comes from Firebase Firestore
+- **Dark mode only** — a deliberate design decision for a consistent, premium command center aesthetic
 
-## About the Project
-
-This portfolio is not just another developer portfolio — it is a **dual-mode experience** packaged inside a single React application.
-
-**Mode 1 — Professional:** A polished, premium design with dark/light theme toggle, smooth scroll animations, and a clean layout that puts content first. This is what recruiters, hiring managers, and clients see when they land on the site.
-
-**Mode 2 — Immersive SINGULARITY:** A science-fiction-themed experience activated by clicking "Enter the Universe." A full-screen transition animation launches the user into a cosmos where skills become periodic table elements, projects orbit as planets, experience unfolds as a spacetime timeline, and certifications form constellations in a star field. All heavy assets (particles, canvas animations, GSAP timelines) are lazy-loaded — zero cost until activated.
-
-**Built for:** Developers, engineers, and IT professionals who want a portfolio that demonstrates technical depth while remaining accessible and professional. The dual-mode concept itself is a portfolio piece — it shows architectural thinking, performance awareness, and creative execution.
-
-<br />
+---
 
 ## Features
 
 ### Professional Mode
 
-- Dark / light theme toggle with system preference detection
-- Smooth scroll-based entrance animations on every section
-- Animated SVG timeline with scroll-driven line drawing
-- Skill cards with animated progress bars and category grouping
-- Project grid with category filters and hover overlays
-- Flip-card certifications with front/back design
-- Floating-label contact form with Firebase message storage
-- Animated success state with SVG checkmark
-- Availability badge, social links, and CV download
-- Magnetic hover effect on interactive elements
-- Fully responsive from 320px to 4K
+| Feature | Description |
+|---------|-------------|
+| Boot Sequence Hero | Animated typing effect with operator status readout and live metrics |
+| Operator Profile | ID card-style about section with personal data and availability badge |
+| Tech Arsenal | Skills displayed as proficiency bars with category grouping |
+| Mission Log | Projects rendered as classified mission entries with status indicators |
+| Deployment History | Experience shown as a scroll-animated timeline |
+| Systems Administration | Server infrastructure, endpoint management, and tooling records |
+| Network Administration | LAN/WAN configurations, protocols, and equipment inventories |
+| Database Administration | Database systems, query operations, and scaling achievements |
+| Security & Surveillance | CCTV systems, access control, and monitoring infrastructure |
+| IT Helpdesk & Support | Ticket resolution stats, hardware/software support scope |
+| Clearances & Credentials | Certifications displayed as flip cards with verification links |
+| Open Channel | Contact form with Firebase message storage and admin inbox |
 
-### Immersive SINGULARITY Mode
+### Deep System Mode
 
-- Full-screen Big Bang transition animation (void > loading > reveal)
-- tsparticles neural network background with grab/repulse interactivity
-- Letter-by-letter name assembly with GSAP stagger
-- Quantum state typewriter with role labels (|dev>, |eng>, |sys>)
-- Animated DNA double helix (Canvas 2D) with scroll-driven rotation
-- Word-by-word bio reveal on scroll
-- Genomic data readout stat cards
-- Periodic table skills with electron shell flip animations
-- Orbital project system with CSS orbit animations
-- Click-to-expand project modals
-- Spacetime fabric background with CSS perspective grid warp
-- GSAP ScrollTrigger curved light-speed travel path
-- Space station cards with light-year date formatting
-- Star constellation certifications with scroll-revealed connection lines
-- Star twinkle animations (pure CSS, zero runtime cost)
-- "Exit Universe" button always accessible (fixed, z-100)
-- Mobile fallbacks: card grids replace orbit/constellation views
+| Feature | Description |
+|---------|-------------|
+| Activation Sequence | Boot animation with glitch effects, access text, and "ACCESS GRANTED" flash |
+| Matrix Rain | Canvas-rendered digital rain with Japanese characters and hex codes |
+| RGB Glitch Name | Animated text with cyan-green and blue chromatic aberration shifts |
+| Terminal Window UI | All sections wrapped in terminal-style containers with traffic light dots |
+| Skill Scan | Skills rendered as `LOADING...` progress bars with color-coded levels |
+| Deployment Listing | Experience as `ls -la ./deployments` with Unix directory permissions |
+| Clearance Files | Certifications as `cat ./clearances.txt` file readout with VERIFIED status |
+| Mission Log | Projects as expandable terminal entries with status badges |
+| CRT Effects | Scanline overlay and circuit grid for authentic terminal feel |
 
 ### Admin Panel
 
-- Firebase Auth email/password protection
-- Dashboard with live Firestore stats (projects, certs, messages, unread)
-- Project CRUD with image upload to Firebase Storage (5MB limit)
-- Certification CRUD with badge image upload
-- Message viewer with split-pane layout and read/unread tracking
-- Auto mark-as-read, reply via mailto, delete with confirmation
-- Terminal/dark aesthetic — always dark, never follows theme toggle
-- Responsive sidebar with mobile overlay
+| Manager | Collection | Capabilities |
+|---------|-----------|--------------|
+| Dashboard | — | Overview hub with navigation to all managers |
+| Personal Info | `personalInfo` | Name, title, bio, social links, resume URL |
+| Stats | `stats` | Projects count, years, users, certifications, systems, tickets |
+| Projects | `projects` | Full CRUD with tech stack, links, status, mission numbers |
+| Experience | `experience` | Roles, achievements, technologies, department tagging |
+| Skills | `skills` | Name, proficiency level (0-100), category, years of experience |
+| SysAdmin | `sysadmin` | Infrastructure scope, tools, tasks, achievements |
+| Network | `network` | Network type, scale, protocols, equipment |
+| Database | `database` | DB systems, query types, tools, scale |
+| Security | `security` | System type, camera count, coverage areas, improvements |
+| Helpdesk | `helpdesk` | Ticket volume, support scope, OS/hardware/software lists |
+| Certifications | `certifications` | Issuer, credential ID, verification URL, category |
+| Messages | `messages` | Inbox with read/unread status, reply via email |
 
-<br />
+---
 
 ## Tech Stack
 
 | Category | Technology | Purpose |
 |----------|-----------|---------|
-| Framework | [React 19](https://react.dev) | Component architecture, hooks, lazy loading |
-| Build Tool | [Vite 8](https://vite.dev) | Dev server, HMR, production bundling |
-| Styling | [Tailwind CSS 3.4](https://tailwindcss.com) | Utility-first CSS, responsive design, dark mode |
-| Animation | [Framer Motion 12](https://www.framer.com/motion/) | Entrance animations, layout transitions, gestures |
-| Animation | [GSAP 3.15](https://gsap.com) + ScrollTrigger | Scroll-driven timelines, SVG path drawing |
-| Backend | [Firebase 12](https://firebase.google.com) | Firestore (data), Auth (admin), Storage (images) |
-| Routing | [React Router 7](https://reactrouter.com) | Client-side routing, protected routes |
-| Particles | [tsparticles 2.12](https://particles.js.org) | Neural network particle background (lazy loaded) |
-| Forms | [React Hook Form 7](https://react-hook-form.com) | Form state, validation, submission |
-| Icons | [React Icons 5](https://react-icons.github.io/react-icons/) | Icon library (Font Awesome, Heroicons, Simple Icons) |
-| Scroll | [React Intersection Observer](https://github.com/thebuilder/react-intersection-observer) | Viewport detection, triggerOnce animations |
-| Numbers | [React CountUp](https://github.com/glennreyes/react-countup) | Animated number counting |
-| CSS Processing | [PostCSS](https://postcss.org) + [Autoprefixer](https://github.com/postcss/autoprefixer) | CSS transforms, vendor prefixes |
-| Linting | [ESLint 10](https://eslint.org) | Code quality, React hooks rules |
-| Fonts | Google Fonts | Syne (headings), Inter (body), JetBrains Mono (code) |
+| **Framework** | React 19.2 | Component-based UI with hooks and lazy loading |
+| **Build Tool** | Vite 8.0 | Lightning-fast dev server and optimized bundler |
+| **Backend** | Firebase 12.13 | Firestore database, Authentication, Storage |
+| **Styling** | Tailwind CSS 3.4 | Utility-first CSS framework |
+| **Animation** | Framer Motion 12.40 | Declarative animations, layout transitions, gestures |
+| **Animation** | GSAP 3.15 | High-performance scroll-driven animations |
+| **Routing** | React Router 7.15 | Client-side routing with protected routes |
+| **Forms** | React Hook Form 7.76 | Performant form state and validation |
+| **Icons** | React Icons 5.6 | Font Awesome, Heroicons, Simple Icons |
+| **Counters** | React CountUp 6.5 | Animated number counting for statistics |
+| **Observers** | React Intersection Observer 10.0 | Viewport-triggered scroll animations |
+| **Particles** | tsParticles 2.12 | Neural network particle background |
+| **Linting** | ESLint 10.3 | Code quality with React hooks rules |
+| **CSS** | PostCSS + Autoprefixer | CSS processing and vendor prefixes |
+| **Fonts** | Google Fonts | Syne (headings), Inter (body), JetBrains Mono (code) |
 
-<br />
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-| Requirement | Version |
-|-------------|---------|
-| Node.js | 18.0 or higher |
-| npm | 9.0 or higher |
-| Firebase Account | Free tier (Spark plan) works |
+- **Node.js** 18+ ([download](https://nodejs.org))
+- **npm** or **yarn**
+- **Firebase account** ([console](https://console.firebase.google.com))
+- **Git**
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/portfolio.git
-cd portfolio
-```
-
-### 2. Install Dependencies
+### Installation
 
 ```bash
+git clone https://github.com/ahmed-albustany/portfolio-master.git
+cd portfolio-master
 npm install
 ```
 
-### 3. Configure Environment Variables
+### Environment Variables
 
-```bash
-cp .env.example .env
+Create a `.env` file in the project root:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-Open `.env` and fill in your Firebase credentials (see [Environment Variables](#environment-variables) below).
+> **Important:** Never commit your `.env` file. It is already included in `.gitignore`.
 
-### 4. Start Development Server
+### Run Development Server
 
 ```bash
 npm run dev
 ```
 
-The app will open at [http://localhost:3000](http://localhost:3000).
+Opens at `http://localhost:3000`
 
-<br />
+### Build for Production
 
-## Environment Variables
-
-Create a `.env` file in the project root with the following keys:
-
-| Variable | Description | Where to Find |
-|----------|-------------|---------------|
-| `VITE_FIREBASE_API_KEY` | Firebase API key | Firebase Console > Project Settings > General > Web API Key |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Auth domain | Firebase Console > Project Settings > General > `your-project.firebaseapp.com` |
-| `VITE_FIREBASE_PROJECT_ID` | Project ID | Firebase Console > Project Settings > General > Project ID |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Storage bucket | Firebase Console > Project Settings > General > `your-project.appspot.com` |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Sender ID | Firebase Console > Project Settings > Cloud Messaging > Sender ID |
-| `VITE_FIREBASE_APP_ID` | App ID | Firebase Console > Project Settings > General > App ID |
-| `VITE_FIREBASE_MEASUREMENT_ID` | Analytics ID (optional) | Firebase Console > Project Settings > General > Measurement ID |
-
-```env
-# .env
-VITE_FIREBASE_API_KEY=AIzaSyB...
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project
-VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
-VITE_FIREBASE_APP_ID=1:123456789:web:abc123
-VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
+```bash
+npm run build
+npm run preview
 ```
 
-> **Important:** Never commit your `.env` file. It is already included in `.gitignore`.
-
-<br />
+---
 
 ## Firebase Setup Guide
 
 ### Step 1: Create a Firebase Project
 
-1. Go to [console.firebase.google.com](https://console.firebase.google.com)
-2. Click **Add project**
-3. Name your project (e.g., `my-portfolio`)
-4. Disable Google Analytics if you don't need it (or enable for tracking)
-5. Click **Create project**
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Click **Add project** and name it (e.g., `command-center-portfolio`)
+3. Disable Google Analytics unless needed
+4. Click **Create project**
 
 ### Step 2: Register a Web App
 
 1. In the Firebase Console, click the **Web** icon (`</>`)
-2. Register your app with a nickname (e.g., `portfolio-web`)
-3. Copy the `firebaseConfig` object — these are your environment variables
+2. Register with a nickname (e.g., `portfolio-web`)
+3. Copy the config values into your `.env` file
 
-### Step 3: Enable Firestore
+### Step 3: Enable Firestore Database
 
 1. Go to **Build > Firestore Database**
-2. Click **Create database**
-3. Select **Start in production mode**
-4. Choose a region closest to your audience
-5. Apply these security rules:
+2. Click **Create database** in production mode
+3. Choose a region closest to your audience
+
+### Step 4: Enable Authentication
+
+1. Go to **Build > Authentication > Sign-in method**
+2. Enable **Email/Password**
+3. Go to **Users** tab and click **Add user** to create your admin account
+
+### Step 5: Copy Config to `.env`
+
+Go to **Project Settings > General > Your apps > Web app** and copy each config value to the matching `VITE_FIREBASE_*` variable.
+
+### Step 6: Deploy Security Rules
+
+In **Firestore Database > Rules**, paste the following:
 
 ```javascript
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public read access to projects and certifications
-    match /projects/{doc} {
+
+    // Public read access for portfolio content
+    match /personalInfo/{docId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
-    match /certifications/{doc} {
+
+    match /stats/{docId} {
       allow read: if true;
       allow write: if request.auth != null;
     }
+
+    match /projects/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /experience/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /skills/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /sysadmin/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /network/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /database/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /security/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /helpdesk/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /certifications/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
     // Messages: anyone can create, only admin can read/update/delete
-    match /messages/{doc} {
+    match /messages/{docId} {
       allow create: if true;
       allow read, update, delete: if request.auth != null;
     }
@@ -252,99 +261,240 @@ service cloud.firestore {
 }
 ```
 
-### Step 4: Enable Authentication
+---
 
-1. Go to **Build > Authentication**
-2. Click **Get started**
-3. Enable **Email/Password** provider
-4. Go to the **Users** tab
-5. Click **Add user** and create your admin account (e.g., `admin@yourdomain.com`)
+## Firestore Collections
 
-### Step 5: Enable Storage
+### Singletons
 
-1. Go to **Build > Storage**
-2. Click **Get started**
-3. Select **Start in production mode**
-4. Apply these security rules:
+<details>
+<summary><code>personalInfo/main</code> — Operator profile data</summary>
 
-```javascript
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    // Public read, authenticated write
-    match /{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null
-                   && request.resource.size < 5 * 1024 * 1024;
-    }
-  }
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Full name |
+| `title` | string | Job title |
+| `subtitle` | string | Extended title |
+| `email` | string | Contact email |
+| `location` | string | City, Country |
+| `availability` | string | Availability status text |
+| `bio` | string | Bio paragraph |
+| `socialLinks` | map | `{ github, linkedin }` |
+| `resumeUrl` | string | Resume file path or URL |
+| `updatedAt` | timestamp | Last update |
 
-<br />
+</details>
 
-## Deployment
+<details>
+<summary><code>stats/main</code> — Dashboard metrics</summary>
 
-### Build for Production
+| Field | Type | Description |
+|-------|------|-------------|
+| `projects` | number | Total projects completed |
+| `years` | number | Years active |
+| `users` | number | Users managed |
+| `certifications` | number | Total certifications |
+| `systems` | number | Systems deployed |
+| `tickets` | number | Tickets resolved |
+| `updatedAt` | timestamp | Last update |
 
-```bash
-npm run build
-```
+</details>
 
-This generates an optimised `dist/` folder ready for deployment.
+### Collections
 
-### Preview Locally
+<details>
+<summary><code>projects</code> — Mission log entries</summary>
 
-```bash
-npm run preview
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Project name |
+| `category` | string | Type (web, mobile, etc.) |
+| `status` | string | completed / in-progress / pending |
+| `description` | string | Short description |
+| `fullDescription` | string | Detailed description |
+| `imageURL` | string | Preview image URL |
+| `techStack` | array | Technologies used |
+| `liveDemo` | string | Live demo URL |
+| `github` | string | Repository URL |
+| `impact` | string | Impact statement |
+| `missionNumber` | string | Mission ID (e.g., MSN-001) |
+| `problemSolved` | string | Problem description |
+| `featured` | boolean | Featured flag |
+| `order` | number | Sort order |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
 
-### Deploy to Vercel
+</details>
 
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com) and import your repository
-3. Set the **Framework Preset** to `Vite`
-4. Add all environment variables from your `.env` file:
-   - Go to **Settings > Environment Variables**
-   - Add each `VITE_FIREBASE_*` key-value pair
-5. Click **Deploy**
-6. After deployment, update `index.html` OG meta tags with your live URL
+<details>
+<summary><code>experience</code> — Deployment history</summary>
 
-### Deploy to Firebase Hosting
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Role / position |
+| `organization` | string | Company name |
+| `duration` | string | Date range (e.g., "2023 - Present") |
+| `type` | string | Full-time / Part-time / Contract |
+| `department` | string | Department category |
+| `description` | string | Role description |
+| `achievements` | array | Key achievements |
+| `technologies` | array | Technologies used |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
 
-```bash
-# Install Firebase CLI (one-time)
-npm install -g firebase-tools
+</details>
 
-# Login to Firebase
-firebase login
+<details>
+<summary><code>skills</code> — Tech arsenal</summary>
 
-# Initialise hosting
-firebase init hosting
-# - Select your Firebase project
-# - Set public directory to: dist
-# - Configure as single-page app: Yes
-# - Set up automatic builds with GitHub: No (or Yes for CI/CD)
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Skill name |
+| `level` | number | Proficiency 0-100 |
+| `category` | string | Category (development, infrastructure, etc.) |
+| `icon` | string | React icon component name |
+| `yearsUsed` | string | Years of experience |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
 
-# Deploy
-firebase deploy --only hosting
-```
+</details>
 
-### Connect Firebase to Production
+<details>
+<summary><code>sysadmin</code> — Systems administration</summary>
 
-After deploying, add your production domain to Firebase:
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | System / project name |
+| `organization` | string | Company |
+| `role` | string | Position held |
+| `duration` | string | Time period |
+| `scope` | string | Scale (e.g., "50+ endpoints") |
+| `description` | string | Overview |
+| `tools` | array | Tools and platforms |
+| `tasks` | array | Regular tasks |
+| `achievements` | array | Key results |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
 
-1. **Authentication:** Go to **Authentication > Settings > Authorized domains** and add your domain
-2. **Firestore:** No changes needed (rules are domain-agnostic)
-3. **Storage:** CORS is handled automatically by Firebase
+</details>
 
-<br />
+<details>
+<summary><code>network</code> — Network administration</summary>
 
-## Admin Panel
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Network / project name |
+| `organization` | string | Company |
+| `networkType` | string | LAN / WAN / etc. |
+| `scale` | string | Size (e.g., "200+ nodes") |
+| `duration` | string | Time period |
+| `description` | string | Overview |
+| `protocols` | array | Protocols used |
+| `equipment` | array | Hardware deployed |
+| `responsibilities` | array | Key duties |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
 
-### Accessing the Panel
+</details>
 
-Navigate to `https://your-domain.com/admin` and log in with the Firebase Auth credentials you created during setup.
+<details>
+<summary><code>database</code> — Database administration</summary>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Database / project name |
+| `organization` | string | Company |
+| `dbSystem` | string | MySQL, PostgreSQL, etc. |
+| `scale` | string | Data size (e.g., "10GB+") |
+| `duration` | string | Time period |
+| `description` | string | Overview |
+| `queryTypes` | array | CRUD, Joins, Aggregation, etc. |
+| `tools` | array | Management tools |
+| `tasks` | array | Regular operations |
+| `achievements` | array | Key results |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
+
+</details>
+
+<details>
+<summary><code>security</code> — Security & surveillance</summary>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | System name |
+| `organization` | string | Company |
+| `systemType` | string | CCTV / Access Control / etc. |
+| `scale` | string | Camera / device count |
+| `duration` | string | Time period |
+| `software` | string | Monitoring software |
+| `hardware` | string | Hardware platform |
+| `coverageAreas` | array | Monitored zones |
+| `responsibilities` | array | Key duties |
+| `improvements` | array | Upgrades made |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
+
+</details>
+
+<details>
+<summary><code>helpdesk</code> — IT helpdesk & support</summary>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Role / service name |
+| `organization` | string | Company |
+| `duration` | string | Time period |
+| `avgTicketsResolved` | string | Monthly ticket volume |
+| `supportScope` | string | User base size |
+| `hardwareSupported` | array | Hardware types |
+| `softwareSupported` | array | Software platforms |
+| `osSupported` | array | Operating systems |
+| `tools` | array | Support tools |
+| `achievements` | array | Key results |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
+
+</details>
+
+<details>
+<summary><code>certifications</code> — Clearances & credentials</summary>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Certification name |
+| `issuer` | string | Issuing organization |
+| `date` | string | Date issued |
+| `credentialID` | string | Credential identifier |
+| `verifyURL` | string | Verification link |
+| `category` | string | it / cloud / security / development |
+| `imageURL` | string | Badge image URL |
+| `createdAt` | timestamp | Creation date |
+| `updatedAt` | timestamp | Last update |
+
+</details>
+
+<details>
+<summary><code>messages</code> — Contact form inbox</summary>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Sender name |
+| `email` | string | Sender email |
+| `subject` | string | Message subject |
+| `message` | string | Message body |
+| `read` | boolean | Read status |
+| `createdAt` | timestamp | Submission time |
+
+</details>
+
+---
+
+## Admin Panel Guide
+
+### Access
+
+Navigate to `https://your-domain.com/admin` and sign in with your Firebase Auth credentials.
 
 ### Creating an Admin Account
 
@@ -355,190 +505,248 @@ Navigate to `https://your-domain.com/admin` and log in with the Firebase Auth cr
 
 ### Managing Content
 
-| Section | Capabilities |
-|---------|-------------|
-| **Dashboard** | View live counts of projects, certifications, messages, and unread messages |
-| **Projects** | Create, edit, and delete projects. Upload project images (max 5MB). Manage tags, URLs, and featured status |
-| **Certifications** | Create, edit, and delete certifications. Upload badge images. Assign categories (cloud, dev, security, IT) |
-| **Messages** | View contact form submissions. Messages auto-mark as read when opened. Reply via email, toggle read status, or delete |
+Every section of the portfolio is managed through its own dedicated panel:
 
-<br />
+1. **Dashboard** — Quick overview and navigation to all managers
+2. **Personal Info** — Update name, title, bio, social links, and resume URL
+3. **Stats** — Set metrics displayed on the hero section
+4. **Projects** — Create, edit, and delete projects with tech stacks, links, and status
+5. **Experience** — Manage work history entries with achievements and technologies
+6. **Skills** — Add skills with proficiency levels (0-100) and categories
+7. **Department Sections** — SysAdmin, Network, Database, Security, and Helpdesk each have dedicated CRUD managers
+8. **Certifications** — Add certifications with credential IDs and verification links
+9. **Messages** — Read contact form submissions, mark as read, or delete
+
+All changes are reflected on the live site immediately — no code changes or redeployments needed.
+
+---
+
+## Deployment Guide
+
+### Deploy to Vercel
+
+1. Push your repository to GitHub:
+
+```bash
+git add .
+git commit -m "Initial deploy"
+git push origin main
+```
+
+2. Go to [vercel.com](https://vercel.com) and click **Import Project**
+
+3. Select your GitHub repository
+
+4. Add environment variables in **Settings > Environment Variables**:
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+
+5. Click **Deploy**
+
+### Auto-Deploy
+
+Every push to the `main` branch automatically triggers a new deployment on Vercel. No manual steps required.
+
+---
 
 ## Folder Structure
 
 ```
-portfolio/
-├── public/                          # Static assets served at root
-│   ├── favicon.svg                  # SVG favicon
-│   ├── icons.svg                    # SVG icon sprite
-│   └── site.webmanifest             # PWA manifest
+src/
+├── App.jsx                           # Root component with routing
+├── main.jsx                          # Entry point with providers
 │
-├── docs/
-│   └── screenshots/                 # README screenshot images
+├── components/
+│   ├── admin/                        # Admin panel components
+│   │   ├── Dashboard.jsx             # Admin overview hub
+│   │   ├── Login.jsx                 # Firebase auth login
+│   │   ├── PersonalInfoManager.jsx   # Profile editor
+│   │   ├── StatsManager.jsx          # Metrics editor
+│   │   ├── ProjectManager.jsx        # Projects CRUD
+│   │   ├── ExperienceManager.jsx     # Experience CRUD
+│   │   ├── SkillsManager.jsx         # Skills CRUD
+│   │   ├── SysAdminManager.jsx       # SysAdmin CRUD
+│   │   ├── NetworkManager.jsx        # Network CRUD
+│   │   ├── DatabaseManager.jsx       # Database CRUD
+│   │   ├── SecurityManager.jsx       # Security CRUD
+│   │   ├── HelpdeskManager.jsx       # Helpdesk CRUD
+│   │   ├── CertManager.jsx           # Certifications CRUD
+│   │   └── MessageViewer.jsx         # Messages inbox
+│   │
+│   ├── layout/                       # Layout components
+│   │   ├── Navbar.jsx                # Navigation with systems dropdown
+│   │   ├── Footer.jsx                # Site footer
+│   │   └── PageLoader.jsx            # Full-page loading state
+│   │
+│   ├── sections/
+│   │   ├── professional/             # Professional mode sections
+│   │   │   ├── Hero.jsx              # Boot sequence hero
+│   │   │   ├── About.jsx             # Operator profile
+│   │   │   ├── Skills.jsx            # Tech arsenal
+│   │   │   ├── Projects.jsx          # Mission log
+│   │   │   ├── Experience.jsx        # Deployment history
+│   │   │   ├── SysAdmin.jsx          # Systems administration
+│   │   │   ├── Network.jsx           # Network administration
+│   │   │   ├── Database.jsx          # Database administration
+│   │   │   ├── Security.jsx          # Security & surveillance
+│   │   │   ├── Helpdesk.jsx          # IT helpdesk & support
+│   │   │   ├── Certifications.jsx    # Clearances & credentials
+│   │   │   └── Contact.jsx           # Contact form
+│   │   │
+│   │   └── deepsystem/               # Deep System mode sections
+│   │       ├── DeepSystemShell.jsx    # Shell with matrix rain & scanlines
+│   │       ├── DeepHero.jsx           # Terminal-style profile
+│   │       ├── DeepSkills.jsx         # Loading bar skill readouts
+│   │       ├── DeepExperience.jsx     # Directory listing experience
+│   │       ├── DeepCertifications.jsx # File readout certifications
+│   │       └── DeepProjects.jsx       # Mission log terminal
+│   │
+│   └── ui/                           # Reusable UI components
+│       ├── CircuitBackground.jsx      # Circuit board SVG pattern
+│       ├── DepartmentCard.jsx         # Department section card
+│       ├── EmptyState.jsx             # Empty data placeholder
+│       ├── SkeletonLoader.jsx         # Loading skeleton
+│       ├── StatCard.jsx               # Metric display card
+│       └── StatusBadge.jsx            # Status indicator badge
 │
-├── src/
-│   ├── main.jsx                     # App entry point, BrowserRouter wrapper
-│   ├── App.jsx                      # Root component, route definitions, provider nesting
-│   │
-│   ├── assets/                      # Bundled static assets (images, SVGs)
-│   │   └── hero.png
-│   │
-│   ├── context/                     # React Context providers
-│   │   ├── ThemeContext.jsx          # Dark/light theme with localStorage persistence
-│   │   └── ModeContext.jsx           # Professional/Immersive mode with transition state machine
-│   │
-│   ├── data/
-│   │   └── portfolioData.js         # Static fallback data (projects, skills, experience, certs)
-│   │
-│   ├── firebase/                    # Firebase service layer
-│   │   ├── config.js                # Firebase app initialisation from env vars
-│   │   ├── firestore.js             # Firestore CRUD + domain helpers (all try/catch wrapped)
-│   │   ├── auth.js                  # Firebase Auth login/logout/listener
-│   │   └── storage.js               # Firebase Storage upload/delete
-│   │
-│   ├── hooks/                       # Custom React hooks
-│   │   ├── useTheme.js              # Theme context consumer hook
-│   │   ├── useScrollSpy.js          # Active section detection for navbar
-│   │   └── useCountUp.js            # Animated number counting hook
-│   │
-│   ├── pages/                       # Route-level page components
-│   │   ├── Home.jsx                 # Renders Professional or Immersive mode based on context
-│   │   ├── Admin.jsx                # Protected admin shell with sidebar navigation
-│   │   └── NotFound.jsx             # Cosmic-themed 404 page
-│   │
-│   ├── styles/
-│   │   └── globals.css              # Tailwind directives, CSS custom properties, global utilities
-│   │
-│   └── components/
-│       ├── layout/                  # App-wide layout components
-│       │   ├── Navbar.jsx           # Responsive navbar with theme toggle, mode switch, scroll spy
-│       │   └── Footer.jsx           # Site footer with social links
-│       │
-│       ├── ui/                      # Shared UI components
-│       │   ├── ParticleBackground.jsx  # CSS particle background (professional mode)
-│       │   └── NeuralParticles.jsx     # tsparticles neural network (immersive mode, lazy)
-│       │
-│       ├── sections/
-│       │   ├── professional/        # Professional mode sections
-│       │   │   ├── Hero.jsx         # Landing hero with typewriter, stats, magnetic buttons
-│       │   │   ├── About.jsx        # Bio, profile image, discipline cards
-│       │   │   ├── Skills.jsx       # Categorised skill cards with progress bars
-│       │   │   ├── Projects.jsx     # Filterable project grid with hover overlays
-│       │   │   ├── Experience.jsx   # Animated SVG timeline with scroll-drawn line
-│       │   │   ├── Certifications.jsx  # Flip-card certifications with Firebase data
-│       │   │   └── Contact.jsx      # Contact form + info panel with floating labels
-│       │   │
-│       │   └── immersive/           # Immersive SINGULARITY mode sections
-│       │       ├── ImmersiveHero.jsx          # Big Bang entrance, particles, quantum typewriter
-│       │       ├── ImmersiveAbout.jsx         # DNA double helix canvas, word-by-word bio reveal
-│       │       ├── ImmersiveSkills.jsx        # Periodic table element cards with electron shells
-│       │       ├── ImmersiveProjects.jsx      # Orbital planet system, click-to-expand modals
-│       │       ├── ImmersiveExperience.jsx    # Spacetime timeline, GSAP scroll-drawn path
-│       │       ├── ImmersiveCertifications.jsx  # Star constellation with scroll-revealed connections
-│       │       └── ImmersiveContact.jsx       # Immersive-styled contact form
-│       │
-│       ├── immersive/               # Immersive mode infrastructure
-│       │   ├── ImmersiveShell.jsx   # Cosmic background, exit button, Suspense wrapper
-│       │   └── TransitionOverlay.jsx  # 3-phase mode transition (void > loading > reveal)
-│       │
-│       └── admin/                   # Admin panel components
-│           ├── Login.jsx            # Terminal-styled login with Firebase Auth
-│           ├── Dashboard.jsx        # Live stat cards from Firestore
-│           ├── ProjectManager.jsx   # Project CRUD with image upload
-│           ├── CertManager.jsx      # Certification CRUD with badge upload
-│           └── MessageViewer.jsx    # Split-pane message reader with read tracking
+├── context/
+│   ├── ModeContext.jsx               # Professional / Deep System mode state
+│   └── ThemeContext.jsx              # Dark theme provider
 │
-├── index.html                       # HTML entry point with SEO meta, OG tags, font preconnects
-├── vite.config.js                   # Vite config with path aliases, manual chunks, dev server
-├── tailwind.config.js               # Tailwind config with custom theme, fonts, colors, screens
-├── postcss.config.js                # PostCSS config (Tailwind + Autoprefixer)
-├── eslint.config.js                 # ESLint config with React hooks plugin
-├── package.json                     # Dependencies, scripts, project metadata
-├── .env.example                     # Environment variable template
-├── .gitignore                       # Git ignore rules
-└── README.md                        # This file
+├── hooks/
+│   ├── useFirestore.js               # Firestore data fetching with fallbacks
+│   ├── useScrollSpy.js               # Intersection Observer scroll tracking
+│   ├── useCountUp.js                 # Animated counter hook
+│   └── useTheme.js                   # Theme context consumer
+│
+├── pages/
+│   ├── Home.jsx                      # Main portfolio page
+│   ├── Admin.jsx                     # Admin panel with sidebar nav
+│   └── NotFound.jsx                  # 404 page
+│
+├── data/
+│   ├── fallbackData.js               # Offline fallback data for all collections
+│   └── portfolioData.js              # Static portfolio configuration
+│
+├── firebase/
+│   ├── config.js                     # Firebase initialization from env vars
+│   ├── auth.js                       # Authentication helpers
+│   ├── firestore.js                  # Firestore CRUD for all 12 collections
+│   └── storage.js                    # Firebase Storage helpers
+│
+└── styles/
+    └── globals.css                   # CSS variables, components, animations
 ```
 
-<br />
+---
+
+## Portfolio Sections
+
+| # | Section | ID | Data Source | Description |
+|---|---------|-----|-----------|-------------|
+| 1 | Hero | `hero` | `personalInfo`, `stats` | Boot sequence with typing animation and live metrics |
+| 2 | Operator Profile | `about` | `personalInfo` | ID card-style about section |
+| 3 | Tech Arsenal | `skills` | `skills` | Proficiency bars with category grouping |
+| 4 | Mission Log | `projects` | `projects` | Classified mission entries with status indicators |
+| 5 | Deployment History | `experience` | `experience` | Scroll-animated timeline |
+| 6 | Systems Administration | `sysadmin` | `sysadmin` | Server infrastructure records |
+| 7 | Network Administration | `network` | `network` | Network infrastructure entries |
+| 8 | Database Administration | `database` | `database` | Database management records |
+| 9 | Security & Surveillance | `security` | `security` | CCTV and monitoring systems |
+| 10 | IT Helpdesk & Support | `helpdesk` | `helpdesk` | Ticket operations and support scope |
+| 11 | Clearances & Credentials | `certifications` | `certifications` | Flip-card certifications with verification |
+| 12 | Open Channel | `contact` | `messages` | Contact form with Firebase storage |
+
+---
 
 ## Performance
 
-### Lazy Loading Strategy
+| Optimization | Implementation |
+|-------------|---------------|
+| **Code Splitting** | `React.lazy()` on all sections and admin components |
+| **Route Splitting** | Admin panel loaded only on `/admin` route |
+| **Deep System Lazy Loading** | Entire Deep System shell and 5 sections loaded on demand |
+| **Vendor Chunking** | Vite splits React, Framer Motion/GSAP, and Firebase into separate chunks |
+| **Intersection Observer** | Animations trigger only when sections enter viewport |
+| **Firestore Caching** | `useFirestore` hook with fallback data for instant rendering |
+| **Single Theme** | Dark mode only — no runtime style recalculation or theme switching |
+| **Target Lighthouse** | 90+ Performance, 95+ Accessibility, 95+ Best Practices, 100 SEO |
 
-| Asset | Strategy | Initial Cost |
-|-------|----------|-------------|
-| Professional sections (7) | `React.lazy()` with Suspense | Loaded on first paint (code-split per section) |
-| Immersive Shell + sections (7) | `React.lazy()` with Suspense | Zero — only loaded when "Enter the Universe" is clicked |
-| tsparticles (neural network) | Lazy import inside ImmersiveHero | Zero — never touches the main bundle |
-| Admin panel (5 components) | `React.lazy()` via `/admin` route | Zero — only loaded when navigating to `/admin` |
-| Firebase Storage images | Browser-native lazy loading | Loaded on demand |
+---
 
-### Bundle Analysis
+## Screenshots
 
-| Chunk | Size (gzip) | Contents |
-|-------|-------------|----------|
-| `vendor` | ~71 KB | React, React DOM, React Router |
-| `animations` | ~91 KB | Framer Motion, GSAP, ScrollTrigger |
-| `firebase` | ~113 KB | Firebase Firestore, Auth, Storage |
-| `index` (app shell) | ~18 KB | App, contexts, navbar, footer |
-| Section chunks | 1.5–4.1 KB each | Individual page sections |
+<p align="center">
+  <img src="docs/screenshots/professional-hero.png" alt="Professional Mode — Hero" width="700" />
+  <br/><em>Professional Mode — Boot Sequence Hero</em>
+</p>
 
-### Lighthouse Score Targets
+<p align="center">
+  <img src="docs/screenshots/deep-system.png" alt="Deep System Mode" width="700" />
+  <br/><em>Deep System Mode — Matrix Terminal</em>
+</p>
 
-| Metric | Target |
-|--------|--------|
-| Performance | 90+ |
-| Accessibility | 95+ |
-| Best Practices | 95+ |
-| SEO | 100 |
+<p align="center">
+  <img src="docs/screenshots/admin-panel.png" alt="Admin Panel" width="700" />
+  <br/><em>Admin Panel — Content Management</em>
+</p>
 
-> Run `npx lighthouse https://your-domain.com --view` after deployment to verify.
+<p align="center">
+  <img src="docs/screenshots/mobile-view.png" alt="Mobile View" width="350" />
+  <br/><em>Mobile Responsive View</em>
+</p>
 
-<br />
+> **Note:** To add screenshots, create a `docs/screenshots/` folder and place your images there. Recommended size: 1280x800.
 
-## Customisation
-
-| What to Change | File to Edit |
-|----------------|-------------|
-| Name, bio, email, social links, stats | `src/data/portfolioData.js` > `personalInfo` and `stats` |
-| Projects | `src/data/portfolioData.js` > `projects` |
-| Work experience | `src/data/portfolioData.js` > `experience` |
-| Certifications | `src/data/portfolioData.js` > `certifications` |
-| Skills and proficiency levels | `src/data/portfolioData.js` > `skills` |
-| Theme colours (primary, accents, backgrounds) | `src/styles/globals.css` > CSS custom properties |
-| Favicon and app icons | `public/` directory |
-| OG image for social sharing | `public/og-image.png` (1200x630 recommended) |
-| SEO meta tags and page title | `index.html` |
-| Domain URLs in OG tags | `index.html` > `og:url`, `twitter:url` |
-
-<br />
-
-## License
-
-This project is licensed under the **MIT License** — you are free to use, modify, and distribute it.
-
-<br />
+---
 
 ## Author
 
-**Ahmed**
+**Ahmed Albustany**
+IT Officer & Full-Stack Developer | Amman, Jordan
 
-Full-Stack Developer & IT Systems Engineer
+[![Portfolio](https://img.shields.io/badge/Portfolio-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://portfolio-master-kohl.vercel.app)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/ahmed-albustany-65a66027b)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ahmed-albustany)
+[![Email](https://img.shields.io/badge/Email-0078D4?style=for-the-badge&logo=microsoft-outlook&logoColor=white)](mailto:ahmed.albustany@outlook.com)
 
-<p>
-  <a href="https://github.com/yourusername">
-    <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
-  </a>
-  <a href="https://linkedin.com/in/yourusername">
-    <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
-  </a>
-  <a href="https://your-domain.com">
-    <img src="https://img.shields.io/badge/Portfolio-00D4FF?style=for-the-badge&logo=vercel&logoColor=white" alt="Portfolio" />
-  </a>
-</p>
+---
+
+## License
+
+Distributed under the MIT License.
+
+```
+MIT License
+
+Copyright (c) 2025 Ahmed Albustany
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ---
 
 <p align="center">
-  <sub>Built with precision and deployed with confidence.</sub>
+  Built with precision. Deployed with confidence.<br/>
+  <strong>Command Center Portfolio</strong> — Ahmed Albustany
 </p>
