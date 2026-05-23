@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   HiPlus,
@@ -11,7 +11,6 @@ import {
   HiCheckCircle,
 } from 'react-icons/hi';
 import { getDocuments, addDocument, updateDocument, deleteDocument } from '@/firebase/firestore';
-import { uploadFile, deleteFile } from '@/firebase/storage';
 
 /* ================================================================
    CATEGORIES
@@ -29,11 +28,7 @@ const CATEGORIES = [
 
 function ProjectForm({ project, onSave, onCancel }) {
   const isEditing = !!project;
-  const [uploading, setUploading] = useState(false);
-  const [imagePreview, setImagePreview] = useState(project?.image || '');
-  const [imageFile, setImageFile] = useState(null);
   const [error, setError] = useState('');
-  const fileRef = useRef(null);
 
   const {
     register,
@@ -48,39 +43,14 @@ function ProjectForm({ project, onSave, onCancel }) {
       tags: project?.tags?.join(', ') || '',
       liveUrl: project?.liveUrl || '',
       githubUrl: project?.githubUrl || '',
+      image: project?.image || '',
       featured: project?.featured || false,
     },
   });
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be under 5 MB.');
-      return;
-    }
-    setError('');
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-  };
-
   const onSubmit = async (data) => {
     setError('');
     try {
-      let imageUrl = project?.image || '';
-
-      // Upload image if new file selected
-      if (imageFile) {
-        setUploading(true);
-        const path = `projects/${Date.now()}_${imageFile.name}`;
-        imageUrl = await uploadFile(imageFile, path);
-        setUploading(false);
-      }
-
       const payload = {
         title: data.title.trim(),
         description: data.description.trim(),
@@ -93,7 +63,7 @@ function ProjectForm({ project, onSave, onCancel }) {
         liveUrl: data.liveUrl.trim(),
         githubUrl: data.githubUrl.trim(),
         featured: data.featured,
-        image: imageUrl,
+        image: data.image.trim(),
       };
 
       if (isEditing) {
@@ -105,7 +75,6 @@ function ProjectForm({ project, onSave, onCancel }) {
       onSave();
     } catch {
       setError('Failed to save project. Please try again.');
-      setUploading(false);
     }
   };
 
@@ -141,41 +110,12 @@ function ProjectForm({ project, onSave, onCancel }) {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Image upload */}
-        <div>
-          <label className="block text-xs font-mono font-medium text-[#888] uppercase tracking-wider mb-2">
-            Image
-          </label>
-          <div className="flex items-center gap-4">
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-20 h-14 object-cover rounded-lg border border-[#1e1e2e]"
-              />
-            ) : (
-              <div className="w-20 h-14 rounded-lg bg-[#1e1e2e] flex items-center justify-center">
-                <HiPhotograph className="w-6 h-6 text-[#444]" />
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="px-4 py-2 text-xs font-mono font-medium rounded-lg
-                         transition-colors hover:bg-[#1e1e2e]"
-              style={{ color: '#888', border: '1px solid #1e1e2e' }}
-            >
-              {imagePreview ? 'Change' : 'Upload'}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-          </div>
-        </div>
+        {/* Image URL */}
+        <InputField
+          label="Image URL"
+          placeholder="https://..."
+          {...register('image')}
+        />
 
         {/* Title */}
         <InputField
@@ -243,16 +183,16 @@ function ProjectForm({ project, onSave, onCancel }) {
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={isSubmitting || uploading}
+            disabled={isSubmitting}
             className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold
                        rounded-lg transition-all duration-200
                        disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
             style={{ backgroundColor: '#00D4FF', color: '#0a0a0f' }}
           >
-            {isSubmitting || uploading ? (
+            {isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                {uploading ? 'Uploading...' : 'Saving...'}
+                Saving...
               </>
             ) : (
               <>
@@ -326,17 +266,6 @@ export default function ProjectManager() {
   const handleDelete = async (project) => {
     if (!window.confirm(`Delete "${project.title}"?`)) return;
     try {
-      // Attempt to delete storage image if it's a Firebase URL
-      if (project.image && project.image.includes('firebasestorage')) {
-        try {
-          const path = decodeURIComponent(
-            project.image.split('/o/')[1]?.split('?')[0] || '',
-          );
-          if (path) await deleteFile(path);
-        } catch {
-          /* image cleanup is best-effort */
-        }
-      }
       await deleteDocument('projects', project.id);
       setProjects((prev) => prev.filter((p) => p.id !== project.id));
     } catch {

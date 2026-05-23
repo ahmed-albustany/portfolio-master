@@ -18,18 +18,18 @@ import {
    ================================================================ */
 
 export const personalInfo = {
-  name: '[YOUR NAME]',
-  title: '[YOUR TITLE]',
-  subtitle: 'Full-Stack Developer & IT Systems Engineer',
-  email: 'your@email.com',
-  location: 'Your City, Country',
+  name: 'Ahmed',
+  title: 'Full-Stack Developer & IT Systems Engineer',
+  subtitle: 'Building modern web apps & managing enterprise systems',
+  email: 'ahmed.albustany@outlook.com',
+  location: 'Iraq',
   yearsOfExperience: 3,
   bio: `Passionate developer with expertise in building modern web applications,
     managing IT infrastructure, and solving complex technical challenges.
     Committed to writing clean, efficient, and scalable code.`,
   socialLinks: {
-    github: 'https://github.com/yourusername',
-    linkedin: 'https://linkedin.com/in/yourusername',
+    github: 'https://github.com/ahmed-albustany',
+    linkedin: 'https://linkedin.com/in/ahmed-albustany',
   },
   resumeUrl: '/resume.pdf',
 };

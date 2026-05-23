@@ -1,18 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   HiPlus,
   HiPencil,
   HiTrash,
   HiRefresh,
-  HiPhotograph,
   HiX,
   HiExclamationCircle,
   HiCheckCircle,
   HiShieldCheck,
 } from 'react-icons/hi';
 import { getDocuments, addDocument, updateDocument, deleteDocument } from '@/firebase/firestore';
-import { uploadFile, deleteFile } from '@/firebase/storage';
 
 /* ================================================================
    CATEGORIES
@@ -31,11 +29,7 @@ const CERT_CATEGORIES = [
 
 function CertForm({ cert, onSave, onCancel }) {
   const isEditing = !!cert;
-  const [uploading, setUploading] = useState(false);
-  const [imagePreview, setImagePreview] = useState(cert?.badgeImage || '');
-  const [imageFile, setImageFile] = useState(null);
   const [error, setError] = useState('');
-  const fileRef = useRef(null);
 
   const {
     register,
@@ -49,37 +43,13 @@ function CertForm({ cert, onSave, onCancel }) {
       credentialId: cert?.credentialId || '',
       credentialUrl: cert?.credentialUrl || '',
       category: cert?.category || 'cloud',
+      badgeImage: cert?.badgeImage || '',
     },
   });
-
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be under 5 MB.');
-      return;
-    }
-    setError('');
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-  };
 
   const onSubmit = async (data) => {
     setError('');
     try {
-      let badgeImage = cert?.badgeImage || '';
-
-      if (imageFile) {
-        setUploading(true);
-        const path = `certs/${Date.now()}_${imageFile.name}`;
-        badgeImage = await uploadFile(imageFile, path);
-        setUploading(false);
-      }
-
       const payload = {
         name: data.name.trim(),
         issuer: data.issuer.trim(),
@@ -87,7 +57,7 @@ function CertForm({ cert, onSave, onCancel }) {
         credentialId: data.credentialId.trim(),
         credentialUrl: data.credentialUrl.trim(),
         category: data.category,
-        badgeImage,
+        badgeImage: data.badgeImage.trim(),
       };
 
       if (isEditing) {
@@ -99,7 +69,6 @@ function CertForm({ cert, onSave, onCancel }) {
       onSave();
     } catch {
       setError('Failed to save certificate. Please try again.');
-      setUploading(false);
     }
   };
 
@@ -135,41 +104,12 @@ function CertForm({ cert, onSave, onCancel }) {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Badge image */}
-        <div>
-          <label className="block text-xs font-mono font-medium text-[#888] uppercase tracking-wider mb-2">
-            Badge Image
-          </label>
-          <div className="flex items-center gap-4">
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-16 h-16 object-contain rounded-lg border border-[#1e1e2e] bg-[#1e1e2e] p-1"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-lg bg-[#1e1e2e] flex items-center justify-center">
-                <HiShieldCheck className="w-6 h-6 text-[#444]" />
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="px-4 py-2 text-xs font-mono font-medium rounded-lg
-                         transition-colors hover:bg-[#1e1e2e]"
-              style={{ color: '#888', border: '1px solid #1e1e2e' }}
-            >
-              {imagePreview ? 'Change' : 'Upload'}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-          </div>
-        </div>
+        {/* Badge Image URL */}
+        <AdminInput
+          label="Certificate Image URL"
+          placeholder="https://..."
+          {...register('badgeImage')}
+        />
 
         {/* Name + Issuer */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -214,16 +154,16 @@ function CertForm({ cert, onSave, onCancel }) {
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={isSubmitting || uploading}
+            disabled={isSubmitting}
             className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold
                        rounded-lg transition-all duration-200
                        disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
             style={{ backgroundColor: '#A855F7', color: '#fff' }}
           >
-            {isSubmitting || uploading ? (
+            {isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                {uploading ? 'Uploading...' : 'Saving...'}
+                Saving...
               </>
             ) : (
               <>
@@ -297,16 +237,6 @@ export default function CertManager() {
   const handleDelete = async (cert) => {
     if (!window.confirm(`Delete "${cert.name}"?`)) return;
     try {
-      if (cert.badgeImage && cert.badgeImage.includes('firebasestorage')) {
-        try {
-          const path = decodeURIComponent(
-            cert.badgeImage.split('/o/')[1]?.split('?')[0] || '',
-          );
-          if (path) await deleteFile(path);
-        } catch {
-          /* best-effort */
-        }
-      }
       await deleteDocument('certificates', cert.id);
       setCerts((prev) => prev.filter((c) => c.id !== cert.id));
     } catch {
